@@ -1,28 +1,30 @@
 package com.munzenberger.download.core
 
 import java.io.InputStream
-import java.io.OutputStream
 import java.net.HttpURLConnection
 
-fun download(source: Source<Download?>, logger: Logger = ConsoleLogger()) {
+fun download(urlQueue: URLQueue, targetFactory: TargetFactory, logger: Logger = ConsoleLogger()) {
 
     var result = Result.SUCCESS
 
-    var download = source.next(result)
+    var url = urlQueue.next(result)
 
-    while (download != null) {
+    while (url != null) {
 
-        val connection = download.source.openConnection()
+        val connection = url.openConnection()
 
         result = when (connection) {
-            is HttpURLConnection -> httpDownload(connection, download.target, logger)
+            is HttpURLConnection -> {
+                val target = targetFactory.targetFor(url)
+                httpDownload(connection, target, logger)
+            }
             else -> {
                 logger.println("Unsupported connection type: ${connection::class.java.simpleName}")
                 Result.SOURCE_NOT_SUPPORTED
             }
         }
 
-        download = source.next(result)
+        url = urlQueue.next(result)
     }
 }
 

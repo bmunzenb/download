@@ -1,33 +1,18 @@
 package com.munzenberger.download.app
 
-import com.munzenberger.download.core.Download
-import com.munzenberger.download.core.FileTarget
-import com.munzenberger.download.core.Result
-import com.munzenberger.download.core.Source
+import com.munzenberger.download.core.FileTargetFactory
+import com.munzenberger.download.core.RangeParamIterator
+import com.munzenberger.download.core.TemplateURLQueue
+import com.munzenberger.download.core.URLQueue
 import com.munzenberger.download.core.download
-import java.net.URL
 
 fun main(args: Array<String>) {
 
-    val source = object : Source<Download?> {
+    val params = RangeParamIterator(1, 100)
 
-        var hasNext = true
+    val queue = TemplateURLQueue("http://example.com/%d", params)
 
-        override fun next(result: Result): Download? {
+    val targetFactory = FileTargetFactory("/Users/bmunzenb/Desktop/poop.jpg")
 
-            var download: Download? = null
-
-            if (hasNext) {
-                hasNext = false
-
-                download = Download(
-                        URL("https://cdn.shopify.com/s/files/1/0748/6277/products/smellypoopinabox_2000x.jpg?v=1557530195"),
-                        FileTarget("/Users/bmunzenb/Desktop/poop.jpg"))
-            }
-
-            return download
-        }
-    }
-
-    download(source)
+    download(queue, targetFactory)
 }

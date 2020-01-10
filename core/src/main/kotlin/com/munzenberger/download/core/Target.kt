@@ -3,9 +3,6 @@ package com.munzenberger.download.core
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-import java.net.URL
-
-data class Download(val source: URL, val target: Target)
 
 interface Target {
     fun open(): OutputStream
