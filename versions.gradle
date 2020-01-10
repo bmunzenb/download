@@ -1,0 +1,6 @@
+def versions = [:]
+
+versions.kotlin = '1.3.61'
+versions.junit = '4.13'
+
+ext.versions = versions

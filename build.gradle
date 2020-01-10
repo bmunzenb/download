@@ -1,0 +1,28 @@
+buildscript {
+    apply from: 'versions.gradle'
+    
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+subprojects {
+    apply plugin: 'kotlin'
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+
+        testImplementation "junit:junit:$versions.junit"
+    }
+}
+
