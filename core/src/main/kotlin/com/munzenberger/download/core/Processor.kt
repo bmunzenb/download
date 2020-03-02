@@ -3,7 +3,7 @@ package com.munzenberger.download.core
 import java.io.InputStream
 import java.net.HttpURLConnection
 
-fun download(urlQueue: URLQueue, targetFactory: TargetFactory, logger: Logger = ConsoleLogger()) {
+fun download(urlQueue: URLQueue, targetFactory: TargetFactory, requestProperties: Map<String, String> = emptyMap(), logger: Logger = ConsoleLogger()) {
 
     var result = Result.SUCCESS
 
@@ -12,6 +12,9 @@ fun download(urlQueue: URLQueue, targetFactory: TargetFactory, logger: Logger = 
     while (url != null) {
 
         val connection = url.openConnection()
+        requestProperties.forEach { (k, v) ->
+            connection.setRequestProperty(k, v)
+        }
 
         result = when (connection) {
             is HttpURLConnection -> {
