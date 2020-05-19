@@ -14,6 +14,14 @@ interface URLQueue {
                     else -> null
                 }
         }
+
+        fun of(urls: List<String>) = object : URLQueue {
+            private val i = urls.iterator()
+            override fun next(result: Result) = when {
+                i.hasNext() -> URL(i.next())
+                else -> null
+            }
+        }
     }
 }
 

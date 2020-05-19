@@ -1,5 +1,8 @@
 package com.munzenberger.download.core
 
+import okio.buffer
+import okio.sink
+import okio.source
 import java.io.InputStream
 import java.net.HttpURLConnection
 
@@ -50,27 +53,19 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, logger: 
     }
 }
 
-private fun transfer(input: InputStream, target: Target): Int {
+private fun transfer(input: InputStream, target: Target): Long {
 
-    val out = target.open()
+    val source = input.source().buffer()
+    val sink = target.open().sink().buffer()
 
-    var totalBytes = 0
-
-    val buffer = ByteArray(4096)
-
-    var bytes = input.read(buffer)
-    while (bytes > 0) {
-        out.write(buffer, 0, bytes)
-        totalBytes += bytes
-        bytes = input.read(buffer)
+    return source.use { inSource ->
+        sink.use { outSink ->
+            inSource.readAll(outSink)
+        }
     }
-
-    target.close()
-
-    return totalBytes
 }
 
-private fun formatBytes(bytes: Int) : String {
+private fun formatBytes(bytes: Long) : String {
 
     if (bytes < 1024) {
         return "$bytes bytes"
