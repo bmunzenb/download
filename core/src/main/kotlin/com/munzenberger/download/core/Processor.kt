@@ -39,7 +39,7 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, logger: 
     logger.print("${connection.url} -> $target ... ")
 
     return when (val code = connection.responseCode) {
-        HttpURLConnection.HTTP_OK -> {
+        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
             val start = System.currentTimeMillis()
             val bytes = transfer(connection.inputStream, target)
             val elapsed = System.currentTimeMillis() - start

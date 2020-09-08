@@ -9,17 +9,7 @@ class TemplateURLQueueTest {
     @Test
     fun `queue generates urls from template`() {
 
-        val paramIterator = object : TemplateURLQueue.ParamIterator {
-
-            val i = listOf(arrayOf(1, 'a'), arrayOf(2, 'b'), arrayOf(3, 'c')).iterator()
-
-            override fun next(result: Result): Array<Any>? {
-                return when (i.hasNext()) {
-                    true -> i.next()
-                    else -> null
-                }
-            }
-        }
+        val paramIterator = ListParamIterator(listOf(arrayOf(1, 'a'), arrayOf(2, 'b'), arrayOf(3, 'c')))
 
         val template = "http://example.com/%d/%s"
 

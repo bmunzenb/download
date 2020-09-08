@@ -4,7 +4,7 @@ import com.munzenberger.download.core.FileTargetFactory
 import com.munzenberger.download.core.URLQueue
 import com.munzenberger.download.core.download
 
-fun main(args: Array<String>) {
+fun main() {
 
     val queue = URLQueue.of("http://example.com")
 
