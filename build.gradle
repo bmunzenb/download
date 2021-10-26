@@ -23,6 +23,18 @@ allprojects {
 subprojects {
     apply plugin: 'kotlin'
 
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "$versions.jvm"
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "$versions.jvm"
+        }
+    }
+
     dependencies {
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
