@@ -36,14 +36,14 @@ fun download(urlQueue: URLQueue, targetFactory: TargetFactory, requestProperties
 
 private fun httpDownload(connection: HttpURLConnection, target: Target, logger: Logger) : Result {
 
-    logger.print("${connection.url} -> $target ... ")
+    logger.print("${connection.url} -> $target ...")
 
     return when (val code = connection.responseCode) {
         HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
             val start = System.currentTimeMillis()
-            val bytes = transfer(connection.inputStream, target)
+            val bytes = transfer(connection.inputStream, target, logger)
             val elapsed = System.currentTimeMillis() - start
-            logger.println("${formatBytes(bytes)} in ${formatElapsed(elapsed)}.")
+            logger.println(" ${formatBytes(bytes)} in ${formatElapsed(elapsed)}.")
             Result.SUCCESS
         }
         else -> {
@@ -53,14 +53,33 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, logger: 
     }
 }
 
-private fun transfer(input: InputStream, target: Target): Long {
+private fun transfer(input: InputStream, target: Target, logger: Logger): Long {
 
     val source = input.source().buffer()
     val sink = target.open().sink().buffer()
 
+    val counterIncrement = 1024 * 1024 // 1 megabyte
+
     return source.use { inSource ->
         sink.use { outSink ->
-            inSource.readAll(outSink)
+
+            var total: Long = 0
+            var counter = 1
+            val byteArray = ByteArray(8192)
+            var b = inSource.read(byteArray, 0, byteArray.size)
+
+            while (b > 0) {
+                outSink.write(byteArray, 0, b)
+                total += b.toLong()
+                if (counter * counterIncrement < total) {
+                    // print a period for each megabyte downloaded as an indeterminate progress indicator
+                    logger.print(".")
+                    counter++
+                }
+                b = inSource.read(byteArray, 0, byteArray.size)
+            }
+
+            total
         }
     }
 }
@@ -88,7 +107,7 @@ private fun formatElapsed(elapsed: Long) : String {
     val minutes = seconds / 60
 
     if (minutes > 0) {
-        return "${minutes}m ${seconds}s"
+        return "${minutes}m ${seconds % 60}s"
     }
 
     if (seconds > 0) {
