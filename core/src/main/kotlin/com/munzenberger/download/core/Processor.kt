@@ -47,7 +47,7 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, logger: 
             Result.SUCCESS
         }
         else -> {
-            logger.println("error $code.")
+            logger.println(" error $code.")
             Result.SOURCE_ERROR
         }
     }
