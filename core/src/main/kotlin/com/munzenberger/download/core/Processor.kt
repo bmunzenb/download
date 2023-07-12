@@ -87,18 +87,18 @@ private fun transfer(input: InputStream, target: Target, logger: Logger): Long {
 private fun formatBytes(bytes: Long) : String {
 
     if (bytes < 1024) {
-        return "$bytes bytes"
+        return String.format("%,d bytes", bytes)
     }
 
     val kbytes = bytes / 1024f
 
     if (kbytes < 1024f) {
-        return "$kbytes KB"
+        return String.format("%,.1f KB", kbytes)
     }
 
     val mbytes = kbytes / 1024f
 
-    return "$mbytes MB"
+    return String.format("%,.1f MB", mbytes)
 }
 
 private fun formatElapsed(elapsed: Long) : String {
