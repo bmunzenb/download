@@ -1,5 +1,10 @@
 package com.munzenberger.download.core
 
-enum class Result {
-    SUCCESS, SOURCE_NOT_SUPPORTED, SOURCE_ERROR
+sealed class Result {
+
+    class Success(val bytes: Long, val elapsed: Long) : Result();
+
+    object SourceNotSupported : Result();
+
+    class Error(val code: Int) : Result();
 }

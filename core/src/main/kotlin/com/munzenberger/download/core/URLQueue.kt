@@ -44,7 +44,7 @@ class IncrementUntilErrorParamIterator(start: Int) : TemplateURLQueue.ParamItera
 
     override fun next(result: Result): Array<Any>? =
         when (result) {
-            Result.SUCCESS -> {
+            is Result.Success -> {
                 val p: Array<Any> = arrayOf(value)
                 value++
                 p

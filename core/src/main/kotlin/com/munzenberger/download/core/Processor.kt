@@ -6,11 +6,20 @@ import okio.source
 import java.io.InputStream
 import java.net.HttpURLConnection
 
-fun download(urlQueue: URLQueue, targetFactory: TargetFactory, requestProperties: Map<String, String> = emptyMap(), logger: Logger = ConsoleLogger()) {
+fun download(
+    urlQueue: URLQueue,
+    targetFactory: TargetFactory,
+    requestProperties: Map<String, String> = emptyMap(),
+    logger: Logger = ConsoleLogger()
+) {
 
-    var result = Result.SUCCESS
+    var result : Result = Result.Success(-1, -1)
 
     var url = urlQueue.next(result)
+
+    var totalItems = 0;
+    var totalBytes = 0L;
+    var elapsed = System.currentTimeMillis();
 
     while (url != null) {
 
@@ -26,12 +35,21 @@ fun download(urlQueue: URLQueue, targetFactory: TargetFactory, requestProperties
             }
             else -> {
                 logger.println("Unsupported connection type: ${connection::class.java.simpleName}")
-                Result.SOURCE_NOT_SUPPORTED
+                Result.SourceNotSupported
             }
+        }
+
+        if (result is Result.Success) {
+            totalItems++
+            totalBytes += result.bytes
         }
 
         url = urlQueue.next(result)
     }
+
+    elapsed = System.currentTimeMillis() - elapsed;
+
+    logger.println("Downloaded $totalItems URL(s) (${formatBytes(totalBytes)} in ${formatElapsed(elapsed)}).")
 }
 
 private fun httpDownload(connection: HttpURLConnection, target: Target, logger: Logger) : Result {
@@ -44,11 +62,11 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, logger: 
             val bytes = transfer(connection.inputStream, target, logger)
             val elapsed = System.currentTimeMillis() - start
             logger.println(" ${formatBytes(bytes)} in ${formatElapsed(elapsed)}.")
-            Result.SUCCESS
+            Result.Success(bytes, elapsed)
         }
         else -> {
             logger.println(" error $code.")
-            Result.SOURCE_ERROR
+            Result.Error(code)
         }
     }
 }
@@ -107,12 +125,12 @@ private fun formatElapsed(elapsed: Long) : String {
     val minutes = seconds / 60
 
     if (minutes > 0) {
-        return "${minutes}m ${seconds % 60}s"
+        return "$minutes m ${seconds % 60} s"
     }
 
     if (seconds > 0) {
-        return "${seconds}s"
+        return "$seconds s"
     }
 
-    return "${elapsed}ms"
+    return "$elapsed ms"
 }

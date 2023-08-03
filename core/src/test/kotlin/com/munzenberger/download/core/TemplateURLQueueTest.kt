@@ -15,9 +15,11 @@ class TemplateURLQueueTest {
 
         val queue = TemplateURLQueue(template, paramIterator)
 
-        assertEquals("http://example.com/1/a", queue.next(Result.SUCCESS).toString())
-        assertEquals("http://example.com/2/b", queue.next(Result.SUCCESS).toString())
-        assertEquals("http://example.com/3/c", queue.next(Result.SUCCESS).toString())
-        assertNull(queue.next(Result.SUCCESS))
+        val success = Result.Success(-1, -1)
+
+        assertEquals("http://example.com/1/a", queue.next(success).toString())
+        assertEquals("http://example.com/2/b", queue.next(success).toString())
+        assertEquals("http://example.com/3/c", queue.next(success).toString())
+        assertNull(queue.next(success))
     }
 }
