@@ -3,6 +3,7 @@ package com.munzenberger.download.core
 import okio.buffer
 import okio.sink
 import okio.source
+import java.io.File
 import java.io.InputStream
 import java.net.HttpURLConnection
 
@@ -10,6 +11,7 @@ fun download(
     urlQueue: URLQueue,
     targetFactory: TargetFactory,
     requestProperties: Map<String, String> = emptyMap(),
+    postProcess: (Target) -> Unit = {},
     logger: Logger = ConsoleLogger()
 ) {
 
@@ -28,9 +30,10 @@ fun download(
             connection.setRequestProperty(k, v)
         }
 
+        val target = targetFactory.targetFor(url)
+
         result = when (connection) {
             is HttpURLConnection -> {
-                val target = targetFactory.targetFor(url)
                 httpDownload(connection, target, logger)
             }
             else -> {
@@ -42,6 +45,7 @@ fun download(
         if (result is Result.Success) {
             totalItems++
             totalBytes += result.bytes
+            postProcess.invoke(target)
         }
 
         url = urlQueue.next(result)
@@ -49,7 +53,8 @@ fun download(
 
     elapsed = System.currentTimeMillis() - elapsed;
 
-    logger.println("Downloaded $totalItems URL(s) (${formatBytes(totalBytes)} in ${formatElapsed(elapsed)}).")
+    val str = String.format("%,d", totalItems)
+    logger.println("Downloaded $str file(s), ${formatBytes(totalBytes)} in ${formatElapsed(elapsed)}.")
 }
 
 private fun httpDownload(connection: HttpURLConnection, target: Target, logger: Logger) : Result {
@@ -125,12 +130,12 @@ private fun formatElapsed(elapsed: Long) : String {
     val minutes = seconds / 60
 
     if (minutes > 0) {
-        return "$minutes m ${seconds % 60} s"
+        return "${minutes}m ${seconds % 60}s"
     }
 
     if (seconds > 0) {
-        return "$seconds s"
+        return "${seconds}s"
     }
 
-    return "$elapsed ms"
+    return "${elapsed}ms"
 }
