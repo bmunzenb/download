@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        kotlin = '1.9.10'
-        gradle_versions = '0.47.0'
-        okio = '3.5.0'
+        kotlin = '1.9.22'
+        gradle_versions = '0.51.0'
+        okio = '3.7.0'
         junit = '4.13.2'
         mockk = '1.13.9'
     }
@@ -29,11 +29,24 @@ subprojects {
 
     kotlin {
         jvmToolchain {
-            languageVersion = JavaLanguageVersion.of(18)
+            languageVersion = JavaLanguageVersion.of(19)
         }
     }
 
     dependencies {
         testImplementation "junit:junit:$junit"
+    }
+}
+
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
+}
+
+tasks.named("dependencyUpdates").configure {
+    // disallow release candidates as upgradable versions from stable versions
+    rejectVersionIf {
+        isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
     }
 }
