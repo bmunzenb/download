@@ -38,9 +38,8 @@ open class ConsoleLogger {
 
     open fun onDownloadStarted(url: URL, target: Target) {
         downloadStart = System.currentTimeMillis()
-        fileCounter++
         progressCounter = 1
-        print("[$fileCounter] $url -> $target ...")
+        print("[${fileCounter+1}] $url -> $target ...")
     }
 
     open fun onDownloadProgress(bytes: Long) {
@@ -51,6 +50,7 @@ open class ConsoleLogger {
     }
 
     open fun onDownloadCompleted(bytes: Long) {
+        fileCounter++
         totalBytes += bytes
         val elapsed = System.currentTimeMillis() - downloadStart
         println(" ${bytes.formatBytes} in ${elapsed.formatElapsed}.")

@@ -44,7 +44,7 @@ class IncrementUntilErrorParamIterator(start: Int) : TemplateURLQueue.ParamItera
 
     override fun next(result: Result): Array<Any>? =
         when (result) {
-            is Result.Success -> {
+            is Result.Init, is Result.Success -> {
                 val p: Array<Any> = arrayOf(value)
                 value++
                 p
@@ -53,7 +53,7 @@ class IncrementUntilErrorParamIterator(start: Int) : TemplateURLQueue.ParamItera
     }
 }
 
-class RangeParamIterator(range: IntRange) : TemplateURLQueue.ParamIterator {
+class IntRangeParamIterator(range: IntRange) : TemplateURLQueue.ParamIterator {
 
     private var value = range.iterator()
 
@@ -64,7 +64,7 @@ class RangeParamIterator(range: IntRange) : TemplateURLQueue.ParamIterator {
     }
 }
 
-class ListParamIterator(params: List<Array<out Any>>) : TemplateURLQueue.ParamIterator {
+class ListParamIterator(vararg params: Array<out Any>) : TemplateURLQueue.ParamIterator {
 
     private val iterator = params.iterator()
 
