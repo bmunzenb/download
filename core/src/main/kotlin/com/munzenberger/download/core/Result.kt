@@ -2,9 +2,11 @@ package com.munzenberger.download.core
 
 sealed class Result {
 
-    class Success(val bytes: Long, val elapsed: Long) : Result();
+    data object Init : Result()
 
-    object SourceNotSupported : Result();
+    data class Success(val target: Target) : Result();
+
+    data object SourceNotSupported : Result();
 
     class Error(val code: Int) : Result();
 }

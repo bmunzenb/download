@@ -1,3 +1,11 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'com.munzenberger.download.app.MainKt'
+}
+
 dependencies {
     implementation project(':core')
 }

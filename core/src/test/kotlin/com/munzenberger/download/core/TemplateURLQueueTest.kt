@@ -1,5 +1,6 @@
 package com.munzenberger.download.core
 
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -15,11 +16,11 @@ class TemplateURLQueueTest {
 
         val queue = TemplateURLQueue(template, paramIterator)
 
-        val success = Result.Success(-1, -1)
+        val mockTarget = mockk<Target>()
 
-        assertEquals("http://example.com/1/a", queue.next(success).toString())
-        assertEquals("http://example.com/2/b", queue.next(success).toString())
-        assertEquals("http://example.com/3/c", queue.next(success).toString())
-        assertNull(queue.next(success))
+        assertEquals("http://example.com/1/a", queue.next(Result.Init).toString())
+        assertEquals("http://example.com/2/b", queue.next(Result.Success(mockTarget)).toString())
+        assertEquals("http://example.com/3/c", queue.next(Result.Success(mockTarget)).toString())
+        assertNull(queue.next(Result.Success(mockTarget)))
     }
 }
