@@ -8,10 +8,11 @@ interface TargetFactory {
 }
 
 class FileTargetFactory(private val file: File, private val append: Boolean = false) : TargetFactory {
+
     override fun create(source: URL) = FileTarget(file, append)
 }
 
-class FlatPathFileTargetFactory(private val baseDir: File) : TargetFactory {
+class FlatPathFileTargetFactory(private val baseDir: File, private val delimiter: Char = '_') : TargetFactory {
 
     override fun create(source: URL): Target {
 
@@ -23,7 +24,7 @@ class FlatPathFileTargetFactory(private val baseDir: File) : TargetFactory {
         val parts = source.path.split('/')
 
         parts.forEach {
-            filename.append('_').append(it)
+            filename.append(delimiter).append(it)
         }
 
         val path = baseDir.path + File.separator + filename

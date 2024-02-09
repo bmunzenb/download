@@ -20,8 +20,8 @@ typealias Callback = (Status) -> Unit
 fun download(
     urlQueue: URLQueue,
     targetFactory: TargetFactory,
-    callback: Callback = ConsoleLogger().callback,
-    requestProperties: Map<String, String> = emptyMap()
+    requestProperties: Map<String, String> = emptyMap(),
+    callback: Callback = ConsoleLogger().callback
 ) {
 
     callback.invoke(Status.QueueStarted(urlQueue))
