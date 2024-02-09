@@ -21,9 +21,7 @@ open class ConsoleLogger {
             is Status.QueueStarted -> onQueueStarted()
             is Status.DownloadStarted -> onDownloadStarted(status.url, status.target)
             is Status.DownloadProgress -> onDownloadProgress(status.bytes)
-            is Status.DownloadCompleted -> onDownloadCompleted(status.bytes)
-            is Status.DownloadFailed -> onDownloadFailed(status.code)
-            is Status.DownloadError -> onDownloadError(status.message)
+            is Status.DownloadResult -> onDownloadResult(status.url, status.target, status.result)
             is Status.QueueCompleted -> onQueueCompleted()
         }
     }
@@ -49,19 +47,25 @@ open class ConsoleLogger {
         }
     }
 
-    open fun onDownloadCompleted(bytes: Long) {
-        fileCounter++
-        totalBytes += bytes
-        val elapsed = System.currentTimeMillis() - downloadStart
-        println(" ${bytes.formatBytes} in ${elapsed.formatElapsed}.")
-    }
+    open fun onDownloadResult(url: URL, target: Target, result: Result) {
+        when (result) {
 
-    open fun onDownloadFailed(code: Int) {
-        println(" error $code.")
-    }
+            is Result.Error ->
+                println(" error ${result.code}.")
 
-    open fun onDownloadError(message: String) {
-        println(message)
+            is Result.SourceNotSupported ->
+                println(" source not supported: $url")
+
+            is Result.Success -> {
+                fileCounter++
+                totalBytes += result.bytes
+                val elapsed = System.currentTimeMillis() - downloadStart
+                println(" ${result.bytes.formatBytes} in ${elapsed.formatElapsed}.")
+            }
+
+            else ->
+                println(" $result.")
+        }
     }
 
     open fun onQueueCompleted() {

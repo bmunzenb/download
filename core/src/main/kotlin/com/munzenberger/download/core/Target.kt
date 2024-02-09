@@ -6,25 +6,13 @@ import java.io.OutputStream
 
 interface Target {
     fun open(): OutputStream
-    fun close()
 }
 
 class FileTarget(val file: File, private val append: Boolean = false) : Target {
 
     constructor(path: String, append: Boolean = false) : this(File(path), append)
 
-    private var out: OutputStream? = null
-
-    override fun open() : OutputStream {
-        return FileOutputStream(file, append).also {
-            out = it
-        }
-    }
-    override fun close() {
-        out?.close().also {
-            out = null
-        }
-    }
+    override fun open(): OutputStream = FileOutputStream(file, append)
 
     override fun toString() = file.toString()
 }

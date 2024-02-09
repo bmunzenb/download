@@ -1,27 +1,22 @@
 package com.munzenberger.download.core
 
 import java.io.File
-import java.io.IOException
 import java.net.URL
 
 interface TargetFactory {
-    fun targetFor(source: URL): Target
+    fun create(source: URL): Target
 }
 
 class FileTargetFactory(private val file: File, private val append: Boolean = false) : TargetFactory {
-    constructor(path: String, append: Boolean = false) : this(File(path), append)
-    override fun targetFor(source: URL)  = FileTarget(file, append)
+    override fun create(source: URL) = FileTarget(file, append)
 }
 
-/**
- * Generates a target that writes to file named by the URL path in the specified base directory.
- */
 class FlatPathFileTargetFactory(private val baseDir: File) : TargetFactory {
-    constructor(baseDir: String) : this(File(baseDir))
-    override fun targetFor(source: URL): Target {
+
+    override fun create(source: URL): Target {
 
         if (!baseDir.exists() && !baseDir.mkdirs()) {
-            throw IOException("Could not mkdirs for baseDir $baseDir")
+            error("Could not mkdirs for $baseDir")
         }
 
         val filename = StringBuilder(source.host)
@@ -31,18 +26,15 @@ class FlatPathFileTargetFactory(private val baseDir: File) : TargetFactory {
             filename.append('_').append(it)
         }
 
-        val path = "${baseDir.path}${File.separator}$filename"
+        val path = baseDir.path + File.separator + filename
 
         return FileTarget(path)
     }
 }
 
-/**
- * Generates a target that writes a file to a directory structure based on the source URL.
- */
-class URLPathFileTargetFactory(private val baseDir: File) : TargetFactory {
-    constructor(baseDir: String) : this(File(baseDir))
-    override fun targetFor(source: URL): Target {
+class UrlPathFileTargetFactory(private val baseDir: File) : TargetFactory {
+
+    override fun create(source: URL): Target {
 
         val path = StringBuilder(baseDir.path)
                 .append(File.separator)
@@ -57,7 +49,7 @@ class URLPathFileTargetFactory(private val baseDir: File) : TargetFactory {
 
         File(path.toString()).apply {
             if (!exists() && !mkdirs()) {
-                throw IOException("Could not mkdirs for $path")
+                error("Could not mkdirs for $this")
             }
         }
 

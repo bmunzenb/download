@@ -11,9 +11,7 @@ sealed class Status {
     data class QueueStarted(val queue: URLQueue) : Status()
     data class DownloadStarted(val url: URL, val target: Target) : Status()
     data class DownloadProgress(val url: URL, val target: Target, val bytes: Long) : Status()
-    data class DownloadCompleted(val url: URL, val target: Target, val bytes: Long) : Status()
-    data class DownloadFailed(val url: URL, val target: Target, val code: Int) : Status()
-    data class DownloadError(val url: URL, val target: Target, val message: String) : Status()
+    data class DownloadResult(val url: URL, val target: Target, val result: Result) : Status()
     data class QueueCompleted(val queue: URLQueue) : Status()
 }
 
@@ -28,7 +26,7 @@ fun download(
 
     callback.invoke(Status.QueueStarted(urlQueue))
 
-    var result : Result = Result.Init
+    var result : Result = Result.First
 
     var url = urlQueue.next(result)
 
@@ -39,21 +37,16 @@ fun download(
             connection.setRequestProperty(k, v)
         }
 
-        val target = targetFactory.targetFor(url)
+        val target = targetFactory.create(url)
 
         result = when (connection) {
-            is HttpURLConnection -> {
+            is HttpURLConnection ->
                 httpDownload(connection, target, callback)
-            }
-            else -> {
-                callback.invoke(Status.DownloadError(
-                    url,
-                    target,
-                    "Unsupported connection type: ${connection::class.java.simpleName}"
-                ))
+            else ->
                 Result.SourceNotSupported
-            }
         }
+
+        callback.invoke(Status.DownloadResult(url, target, result))
 
         url = urlQueue.next(result)
     }
@@ -70,11 +63,9 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, callback
     return when (val code = connection.responseCode) {
         HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
             val bytes = transfer(url, connection.inputStream, target, callback)
-            callback.invoke(Status.DownloadCompleted(url, target, bytes))
-            Result.Success(target)
+            Result.Success(target, bytes)
         }
         else -> {
-            callback.invoke(Status.DownloadFailed(url, target, code))
             Result.Error(code)
         }
     }

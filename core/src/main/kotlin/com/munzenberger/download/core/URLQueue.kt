@@ -7,15 +7,9 @@ interface URLQueue {
 
     companion object {
 
-        fun of(vararg urls: String) = object : URLQueue {
-            private val i = urls.iterator()
-            override fun next(result: Result) = when {
-                    i.hasNext() -> URL(i.next())
-                    else -> null
-                }
-        }
+        fun of(vararg urls: String) = of(urls.toList())
 
-        fun of(urls: List<String>) = object : URLQueue {
+        fun of(urls: Collection<String>) = object : URLQueue {
             private val i = urls.iterator()
             override fun next(result: Result) = when {
                 i.hasNext() -> URL(i.next())
@@ -44,7 +38,7 @@ class IncrementUntilErrorParamIterator(start: Int) : TemplateURLQueue.ParamItera
 
     override fun next(result: Result): Array<Any>? =
         when (result) {
-            is Result.Init, is Result.Success -> {
+            is Result.First, is Result.Success -> {
                 val p: Array<Any> = arrayOf(value)
                 value++
                 p
