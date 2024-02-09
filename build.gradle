@@ -33,6 +33,10 @@ subprojects {
         }
     }
 
+    base {
+        archivesName = "${rootProject.name}-${project.name}"
+    }
+
     dependencies {
         testImplementation "junit:junit:$junit"
     }

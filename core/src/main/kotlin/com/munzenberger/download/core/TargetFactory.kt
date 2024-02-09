@@ -21,7 +21,10 @@ class FlatPathFileTargetFactory(private val baseDir: File, private val delimiter
         }
 
         val filename = StringBuilder(source.host)
-        val parts = source.path.split('/')
+
+        val parts = source.path
+            .split('/')
+            .filter { it.isNotEmpty() }
 
         parts.forEach {
             filename.append(delimiter).append(it)
@@ -33,7 +36,7 @@ class FlatPathFileTargetFactory(private val baseDir: File, private val delimiter
     }
 }
 
-class UrlPathFileTargetFactory(private val baseDir: File) : TargetFactory {
+class URLPathFileTargetFactory(private val baseDir: File) : TargetFactory {
 
     override fun create(source: URL): Target {
 
@@ -41,7 +44,9 @@ class UrlPathFileTargetFactory(private val baseDir: File) : TargetFactory {
                 .append(File.separator)
                 .append(source.host)
 
-        val parts = source.path.split('/')
+        val parts = source.path
+            .split('/')
+            .filter { it.isNotEmpty() }
 
         // the last part is the filename
         parts.take(parts.size-1).forEach {

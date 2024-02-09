@@ -4,7 +4,7 @@ sealed class Result {
 
     data object First : Result()
 
-    data class Success(val target: Target, val bytes: Long) : Result();
+    data class Success(val bytes: Long) : Result();
 
     data object SourceNotSupported : Result();
 

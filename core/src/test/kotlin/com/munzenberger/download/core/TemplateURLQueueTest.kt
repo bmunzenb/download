@@ -1,6 +1,5 @@
 package com.munzenberger.download.core
 
-import io.mockk.mockk
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -15,12 +14,10 @@ class TemplateURLQueueTest {
 
         val queue = TemplateURLQueue(template, paramIterator)
 
-        val mockTarget = mockk<Target>()
-
         assertEquals("http://example.com/1/a", queue.next(Result.First).toString())
-        assertEquals("http://example.com/2/b", queue.next(Result.Success(mockTarget, 0)).toString())
-        assertEquals("http://example.com/3/c", queue.next(Result.Success(mockTarget, 0)).toString())
-        assertNull(queue.next(Result.Success(mockTarget, 0)))
+        assertEquals("http://example.com/2/b", queue.next(Result.Success(0)).toString())
+        assertEquals("http://example.com/3/c", queue.next(Result.Success(0)).toString())
+        assertNull(queue.next(Result.Success(0)))
     }
 
     @Test
@@ -28,10 +25,8 @@ class TemplateURLQueueTest {
 
         val paramIterator = IncrementUntilErrorParamIterator(0)
 
-        val mockTarget = mockk<Target>()
-
         assertArrayEquals(arrayOf(0), paramIterator.next(Result.First))
-        assertArrayEquals(arrayOf(1), paramIterator.next(Result.Success(mockTarget, 0)))
+        assertArrayEquals(arrayOf(1), paramIterator.next(Result.Success(0)))
         assertNull(paramIterator.next(Result.Error(0)))
     }
 }

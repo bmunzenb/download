@@ -10,10 +10,16 @@ interface URLQueue {
         fun of(vararg urls: String) = of(urls.toList())
 
         fun of(urls: Collection<String>) = object : URLQueue {
+
             private val i = urls.iterator()
+
             override fun next(result: Result) = when {
                 i.hasNext() -> URL(i.next())
                 else -> null
+            }
+
+            override fun toString(): String {
+                return "${URLQueue::class.java.name}(size=${urls.size})"
             }
         }
     }
@@ -29,6 +35,10 @@ class TemplateURLQueue(private val urlTemplate: String, private val paramIterato
         when (val params = paramIterator.next(result)) {
             null -> null
             else -> URL(String.format(urlTemplate, *params))
+    }
+
+    override fun toString(): String {
+        return "${this::class.java.name}(urlTemplate=$urlTemplate, paramIterator=${paramIterator::class.java.name})"
     }
 }
 
