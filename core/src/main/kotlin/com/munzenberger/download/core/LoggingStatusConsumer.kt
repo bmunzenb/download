@@ -2,13 +2,11 @@ package com.munzenberger.download.core
 
 import java.net.URL
 
-open class ConsoleLogger {
+open class LoggingStatusConsumer : StatusConsumer {
 
     companion object {
         private const val PROGRESS_COUNTER_INCREMENT = 1024 * 1024
     }
-
-    val callback : Callback = { onStatus(it) }
 
     private var fileCounter : Int = 0
     private var progressCounter : Int = 0
@@ -16,17 +14,7 @@ open class ConsoleLogger {
     private var downloadStart : Long = 0
     private var totalBytes : Long = 0
 
-    open fun onStatus(status: Status) {
-        when (status) {
-            is Status.QueueStarted -> onQueueStarted()
-            is Status.DownloadStarted -> onDownloadStarted(status.url, status.target)
-            is Status.DownloadProgress -> onDownloadProgress(status.bytes)
-            is Status.DownloadResult -> onDownloadResult(status.url, status.target, status.result)
-            is Status.QueueCompleted -> onQueueCompleted()
-        }
-    }
-
-    open fun onQueueStarted() {
+    override fun onQueueStarted(queue: URLQueue) {
         queueStart = System.currentTimeMillis()
         fileCounter = 0
         progressCounter = 0
@@ -34,20 +22,20 @@ open class ConsoleLogger {
         println("Starting download ...")
     }
 
-    open fun onDownloadStarted(url: URL, target: Target) {
+    override fun onDownloadStarted(url: URL, target: Target) {
         downloadStart = System.currentTimeMillis()
         progressCounter = 1
-        print("[${fileCounter+1}] $url -> $target ...")
+        print("[${++fileCounter}] $url -> $target ...")
     }
 
-    open fun onDownloadProgress(bytes: Long) {
+    override fun onDownloadProgress(url: URL, target: Target, bytes: Long) {
         if (progressCounter * PROGRESS_COUNTER_INCREMENT < bytes) {
             print(".") // print a period for each megabyte downloaded as an indeterminate progress indicator
             progressCounter++
         }
     }
 
-    open fun onDownloadResult(url: URL, target: Target, result: Result) {
+    override fun onDownloadResult(url: URL, target: Target, result: Result) {
         when (result) {
 
             is Result.Error ->
@@ -57,7 +45,6 @@ open class ConsoleLogger {
                 println(" source not supported: $url")
 
             is Result.Success -> {
-                fileCounter++
                 totalBytes += result.bytes
                 val elapsed = System.currentTimeMillis() - downloadStart
                 println(" ${result.bytes.formatBytes} in ${elapsed.formatElapsed}.")
@@ -68,7 +55,7 @@ open class ConsoleLogger {
         }
     }
 
-    open fun onQueueCompleted() {
+    override fun onQueueCompleted(queue: URLQueue) {
         val str = String.format("%,d", fileCounter)
         val elapsed = System.currentTimeMillis() - queueStart
         println("Downloaded $str file(s), ${totalBytes.formatBytes} in ${elapsed.formatElapsed}.")

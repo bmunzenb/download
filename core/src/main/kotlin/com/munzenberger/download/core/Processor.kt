@@ -6,6 +6,7 @@ import okio.source
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.function.Consumer
 
 sealed class Status {
     data class QueueStarted(val queue: URLQueue) : Status()
@@ -15,16 +16,14 @@ sealed class Status {
     data class QueueCompleted(val queue: URLQueue) : Status()
 }
 
-typealias Callback = (Status) -> Unit
-
 fun download(
     urlQueue: URLQueue,
     targetFactory: TargetFactory,
     requestProperties: Map<String, String> = emptyMap(),
-    callback: Callback = ConsoleLogger().callback
+    callback: Consumer<Status> = LoggingStatusConsumer()
 ) {
 
-    callback.invoke(Status.QueueStarted(urlQueue))
+    callback.accept(Status.QueueStarted(urlQueue))
 
     var result : Result = Result.First
 
@@ -46,19 +45,19 @@ fun download(
                 Result.SourceNotSupported
         }
 
-        callback.invoke(Status.DownloadResult(url, target, result))
+        callback.accept(Status.DownloadResult(url, target, result))
 
         url = urlQueue.next(result)
     }
 
-    callback.invoke(Status.QueueCompleted(urlQueue))
+    callback.accept(Status.QueueCompleted(urlQueue))
 }
 
-private fun httpDownload(connection: HttpURLConnection, target: Target, callback: Callback) : Result {
+private fun httpDownload(connection: HttpURLConnection, target: Target, callback: Consumer<Status>) : Result {
 
     val url: URL = connection.url
 
-    callback.invoke(Status.DownloadStarted(url, target))
+    callback.accept(Status.DownloadStarted(url, target))
 
     return when (val code = connection.responseCode) {
         HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
@@ -71,7 +70,7 @@ private fun httpDownload(connection: HttpURLConnection, target: Target, callback
     }
 }
 
-private fun transfer(url: URL, input: InputStream, target: Target, callback: Callback): Long {
+private fun transfer(url: URL, input: InputStream, target: Target, callback: Consumer<Status>): Long {
 
     val source = input.source().buffer()
     val sink = target.open().sink().buffer()
@@ -86,7 +85,7 @@ private fun transfer(url: URL, input: InputStream, target: Target, callback: Cal
             while (b > 0) {
                 outSink.write(byteArray, 0, b)
                 total += b.toLong()
-                callback.invoke(Status.DownloadProgress(url, target, total))
+                callback.accept(Status.DownloadProgress(url, target, total))
                 b = inSource.read(byteArray, 0, byteArray.size)
             }
 
