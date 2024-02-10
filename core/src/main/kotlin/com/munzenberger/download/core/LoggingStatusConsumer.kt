@@ -25,7 +25,7 @@ class LoggingStatusConsumer : StatusConsumer {
     override fun onDownloadStarted(url: URL, target: Target) {
         downloadStart = System.currentTimeMillis()
         progressCounter = 1
-        print("[${++fileCounter}] $url -> $target ...")
+        print("[${fileCounter+1}] $url -> $target ...")
     }
 
     override fun onDownloadProgress(url: URL, target: Target, bytes: Long) {
@@ -48,6 +48,7 @@ class LoggingStatusConsumer : StatusConsumer {
                 totalBytes += result.bytes
                 val elapsed = System.currentTimeMillis() - downloadStart
                 println(" ${result.bytes.formatBytes} in ${elapsed.formatElapsed}.")
+                fileCounter++
             }
 
             else ->
