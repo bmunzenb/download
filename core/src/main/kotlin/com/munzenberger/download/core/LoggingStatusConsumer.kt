@@ -2,7 +2,7 @@ package com.munzenberger.download.core
 
 import java.net.URL
 
-open class LoggingStatusConsumer : StatusConsumer {
+class LoggingStatusConsumer : StatusConsumer {
 
     companion object {
         private const val PROGRESS_COUNTER_INCREMENT = 1024 * 1024
