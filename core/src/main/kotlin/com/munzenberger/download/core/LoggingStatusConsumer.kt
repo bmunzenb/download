@@ -8,7 +8,8 @@ class LoggingStatusConsumer : StatusConsumer {
         private const val PROGRESS_COUNTER_INCREMENT = 1024 * 1024
     }
 
-    private var fileCounter : Int = 0
+    private var urlCounter : Int = 0
+    private var downloadCounter : Int = 0
     private var progressCounter : Int = 0
     private var queueStart : Long = 0
     private var downloadStart : Long = 0
@@ -16,7 +17,8 @@ class LoggingStatusConsumer : StatusConsumer {
 
     override fun onQueueStarted(queue: URLQueue) {
         queueStart = System.currentTimeMillis()
-        fileCounter = 0
+        urlCounter = 0
+        downloadCounter = 0
         progressCounter = 0
         totalBytes = 0
         println("Starting download ...")
@@ -24,8 +26,9 @@ class LoggingStatusConsumer : StatusConsumer {
 
     override fun onDownloadStarted(url: URL, target: Target) {
         downloadStart = System.currentTimeMillis()
+        urlCounter++
         progressCounter = 1
-        print("[${fileCounter+1}] $url -> $target ...")
+        print("[$urlCounter] $url -> $target ...")
     }
 
     override fun onDownloadProgress(url: URL, target: Target, bytes: Long) {
@@ -48,7 +51,7 @@ class LoggingStatusConsumer : StatusConsumer {
                 totalBytes += result.bytes
                 val elapsed = System.currentTimeMillis() - downloadStart
                 println(" ${result.bytes.formatBytes} in ${elapsed.formatElapsed}.")
-                fileCounter++
+                downloadCounter++
             }
 
             else ->
@@ -57,9 +60,11 @@ class LoggingStatusConsumer : StatusConsumer {
     }
 
     override fun onQueueCompleted(queue: URLQueue) {
-        val str = String.format("%,d", fileCounter)
+        val urls = String.format("%,d", urlCounter)
+        val downloads = String.format("%,d", downloadCounter)
         val elapsed = System.currentTimeMillis() - queueStart
-        println("Downloaded $str file(s), ${totalBytes.formatBytes} in ${elapsed.formatElapsed}.")
+        println("Download completed in ${elapsed.formatElapsed}.")
+        println("$urls URL(s): $downloads downloaded, ${totalBytes.formatBytes}.")
     }
 }
 

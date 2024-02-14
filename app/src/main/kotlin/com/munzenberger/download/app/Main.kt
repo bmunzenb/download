@@ -7,11 +7,12 @@ import java.io.File
 
 fun main() {
 
-    val queue = URLQueue.of("http://example.com/index.html")
+    val queue = URLQueue.of(
+        "http://example.com/index.html",
+        "http://example.com/404.html"
+    )
 
     val targetFactory = FlatPathFileTargetFactory(baseDir = File("."))
 
-    Processor().download(queue, targetFactory) { status ->
-        println(status)
-    }
+    Processor().download(queue, targetFactory)
 }
