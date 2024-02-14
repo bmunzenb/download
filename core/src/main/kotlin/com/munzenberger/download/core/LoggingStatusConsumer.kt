@@ -82,7 +82,13 @@ private val Long.formatBytes : String
 
         val mb = kb / 1024f
 
-        return String.format("%,.1f MB", mb)
+        if (mb < 1024f) {
+            return String.format("%,.1f MB", mb)
+        }
+
+        val gb = mb / 1024f
+
+        return String.format("%,.1f GB", gb)
     }
 
 private val Long.formatElapsed : String
