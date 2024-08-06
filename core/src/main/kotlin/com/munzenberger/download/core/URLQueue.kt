@@ -1,5 +1,6 @@
 package com.munzenberger.download.core
 
+import java.net.URI
 import java.net.URL
 
 interface URLQueue {
@@ -14,7 +15,7 @@ interface URLQueue {
             private val i = urls.iterator()
 
             override fun next(result: Result) = when {
-                i.hasNext() -> URL(i.next())
+                i.hasNext() -> URI(i.next()).toURL()
                 else -> null
             }
 
@@ -34,7 +35,7 @@ class TemplateURLQueue(private val urlTemplate: String, private val paramIterato
     override fun next(result: Result): URL? =
         when (val params = paramIterator.next(result)) {
             null -> null
-            else -> URL(String.format(urlTemplate, *params))
+            else -> URI(String.format(urlTemplate, *params)).toURL()
     }
 
     override fun toString(): String {

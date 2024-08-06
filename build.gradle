@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin = '2.0.0'
+        kotlin = '2.0.10'
         gradle_versions = '0.51.0'
         okio = '3.9.0'
         clikt = '4.4.0'
