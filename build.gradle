@@ -1,11 +1,11 @@
 buildscript {
     ext {
-        kotlin = '2.0.10'
+        kotlin = '2.0.21'
         gradle_versions = '0.51.0'
-        okio = '3.9.0'
-        clikt = '4.4.0'
+        okio = '3.9.1'
+        clikt = '5.0.1'
         junit = '4.13.2'
-        mockk = '1.13.12'
+        mockk = '1.13.13'
     }
 
     repositories {
