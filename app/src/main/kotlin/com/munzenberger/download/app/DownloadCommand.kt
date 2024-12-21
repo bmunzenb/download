@@ -2,27 +2,32 @@ package com.munzenberger.download.app
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
 import com.munzenberger.download.core.*
+import java.io.File
 
-class DownloadByIncrementingTemplate : CliktCommand() {
+class DownloadCommand : CliktCommand() {
 
-    private val template by option("--template")
+    private val template by option("--increment-template")
         .required()
+        .help("Incrementing URL template")
 
     private val incrementStart by option("--increment-start")
         .int()
         .default(0)
+        .help("Start value (defaults to 0)")
 
     private val incrementEnd by option("--increment-end")
         .int()
+        .help("End value, otherwise increment until error")
 
     private val appendOutputFile by option("--append-to-file")
         .file()
-        .required()
+        .help("Appends each download to this file")
 
     override fun run() {
 
@@ -33,7 +38,10 @@ class DownloadByIncrementingTemplate : CliktCommand() {
 
         val queue = TemplateURLQueue(template, paramIterator)
 
-        val targetFactory = FileTargetFactory(appendOutputFile, true)
+        val targetFactory = when (val file = appendOutputFile) {
+            null -> URLPathFileTargetFactory(File("."))
+            else -> FileTargetFactory(file, true)
+        }
 
         Processor().download(queue, targetFactory)
     }

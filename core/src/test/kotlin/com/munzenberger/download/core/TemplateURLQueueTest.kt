@@ -8,7 +8,7 @@ class TemplateURLQueueTest {
     @Test
     fun `queue generates urls from template`() {
 
-        val paramIterator = ListParamIterator(arrayOf(1, 'a'), arrayOf(2, 'b'), arrayOf(3, 'c'))
+        val paramIterator = ListParamIterator(listOf(1, 'a'), listOf(2, 'b'), listOf(3, 'c'))
 
         val template = "http://example.com/%d/%s"
 
@@ -25,8 +25,8 @@ class TemplateURLQueueTest {
 
         val paramIterator = IncrementUntilErrorParamIterator(0)
 
-        assertArrayEquals(arrayOf(0), paramIterator.next(Result.First))
-        assertArrayEquals(arrayOf(1), paramIterator.next(Result.Success(0)))
+        assertEquals(listOf(0), paramIterator.next(Result.First))
+        assertEquals(listOf(1), paramIterator.next(Result.Success(0)))
         assertNull(paramIterator.next(Result.Error(0)))
     }
 }

@@ -29,13 +29,13 @@ interface URLQueue {
 class TemplateURLQueue(private val urlTemplate: String, private val paramIterator: ParamIterator) : URLQueue {
 
     interface ParamIterator {
-        fun next(result: Result): Array<out Any>?
+        fun next(result: Result): List<Any>?
     }
 
     override fun next(result: Result): URL? =
         when (val params = paramIterator.next(result)) {
             null -> null
-            else -> URI(String.format(urlTemplate, *params)).toURL()
+            else -> URI(String.format(urlTemplate, *params.toTypedArray())).toURL()
     }
 
     override fun toString(): String {
@@ -47,10 +47,10 @@ class IncrementUntilErrorParamIterator(start: Int) : TemplateURLQueue.ParamItera
 
     private var value = start
 
-    override fun next(result: Result): Array<Any>? =
+    override fun next(result: Result): List<Any>? =
         when (result) {
             is Result.First, is Result.Success -> {
-                val p: Array<Any> = arrayOf(value)
+                val p: List<Any> = listOf(value)
                 value++
                 p
             }
@@ -62,18 +62,18 @@ class IntRangeParamIterator(range: IntRange) : TemplateURLQueue.ParamIterator {
 
     private var value = range.iterator()
 
-    override fun next(result: Result): Array<Any>? =
+    override fun next(result: Result): List<Any>? =
         when (value.hasNext()) {
-            true -> arrayOf(value.nextInt())
+            true -> listOf(value.nextInt())
             else -> null
     }
 }
 
-class ListParamIterator(vararg params: Array<out Any>) : TemplateURLQueue.ParamIterator {
+class ListParamIterator(vararg params: List<Any>) : TemplateURLQueue.ParamIterator {
 
     private val iterator = params.iterator()
 
-    override fun next(result: Result): Array<out Any>? =
+    override fun next(result: Result): List<Any>? =
             when (iterator.hasNext()) {
                 true -> iterator.next()
                 else -> null
