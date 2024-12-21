@@ -4,6 +4,7 @@ plugins {
 
 application {
     mainClass = 'com.munzenberger.download.app.MainKt'
+    applicationName 'download'
 }
 
 dependencies {
