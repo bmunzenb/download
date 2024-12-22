@@ -29,6 +29,12 @@ class DownloadCommand : CliktCommand() {
         .file()
         .help("Appends each download to this file")
 
+    private val userAgent by option("--user-agent")
+        .help("Value for user-agent request header")
+
+    private val referer by option("--referer")
+        .help("Value for referer request header")
+
     override fun run() {
 
         val paramIterator = when (val end = incrementEnd) {
@@ -43,6 +49,11 @@ class DownloadCommand : CliktCommand() {
             else -> FileTargetFactory(file, true)
         }
 
-        Processor().download(queue, targetFactory)
+        val requestProperties = mutableMapOf<String,String>().apply {
+            userAgent?.let { put("User-agent", it) }
+            referer?.let { put("Referer", it) }
+        }
+
+        Processor(requestProperties).download(queue, targetFactory)
     }
 }
