@@ -12,20 +12,20 @@ import java.io.File
 
 class DownloadCommand : CliktCommand() {
 
-    private val template by option("--increment-template")
+    private val template by option("--template")
         .required()
         .help("Incrementing URL template")
 
-    private val incrementStart by option("--increment-start")
+    private val incrementStart by option("--start")
         .int()
         .default(0)
         .help("Start value (defaults to 0)")
 
-    private val incrementEnd by option("--increment-end")
+    private val incrementEnd by option("--end")
         .int()
         .help("End value, otherwise increment until error")
 
-    private val appendOutputFile by option("--append-to-file")
+    private val appendOutputFile by option("--append")
         .file()
         .help("Appends each download to this file")
 

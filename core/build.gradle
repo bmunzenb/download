@@ -1,5 +1,22 @@
+plugins {
+    id 'java-library'
+}
+
 dependencies {
     api "com.squareup.okio:okio:$okio"
 
     testImplementation "io.mockk:mockk:$mockk"
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+java {
+    withSourcesJar()
 }
