@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
 
 dependencies {
@@ -19,4 +20,16 @@ tasks.named('jar') {
 
 java {
     withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.munzenberger'
+            artifactId = "${rootProject.name}-${project.name}"
+            version = project.version
+
+            from components.java
+        }
+    }
 }
