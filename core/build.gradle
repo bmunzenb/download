@@ -23,11 +23,35 @@ java {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            url = uri("https://maven.pkg.github.com/bmunzenb/download")
+            credentials {
+                username = System.getenv("GITHUB_USER")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+
     publications {
         maven(MavenPublication) {
-            groupId = 'com.munzenberger'
             artifactId = "${rootProject.name}-${project.name}"
-            version = project.version
+
+            pom {
+                name = 'Download Core'
+                description = 'Mass download utilities'
+                url = 'https://github.com/bmunzenb/download'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/license/mit'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/bmunzenb/download'
+                }
+            }
 
             from components.java
         }
