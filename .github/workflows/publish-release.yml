@@ -1,4 +1,4 @@
-name: Draft Release
+name: Publish Release
 
 on:
   workflow_dispatch: # allow manual execution
@@ -34,8 +34,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           draft: true
-          files: |
-            app/build/distributions/*
+          files: app/build/distributions/*
 
       - name: Publish package
         run: ./gradlew publish
