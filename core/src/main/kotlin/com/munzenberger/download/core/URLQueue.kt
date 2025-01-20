@@ -32,6 +32,7 @@ class TemplateURLQueue(private val urlTemplate: String, private val paramIterato
         fun next(result: Result): List<Any>?
     }
 
+    @Suppress("SpreadOperator")
     override fun next(result: Result): URL? =
         when (val params = paramIterator.next(result)) {
             null -> null

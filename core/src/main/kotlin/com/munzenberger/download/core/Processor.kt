@@ -18,6 +18,10 @@ sealed class Status {
 
 class Processor(private val requestProperties: Map<String, String> = emptyMap()) {
 
+    companion object {
+        private const val BUFFER_SIZE = 8192
+    }
+
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,
@@ -82,7 +86,7 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
             sink.use { outSink ->
 
                 var total: Long = 0
-                val byteArray = ByteArray(8192)
+                val byteArray = ByteArray(BUFFER_SIZE)
                 var b = inSource.read(byteArray, 0, byteArray.size)
 
                 while (b > 0) {

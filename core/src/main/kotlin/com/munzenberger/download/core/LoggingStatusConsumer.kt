@@ -1,11 +1,13 @@
 package com.munzenberger.download.core
 
 import java.net.URL
+import java.util.Locale
 
 class LoggingStatusConsumer : StatusConsumer {
 
     companion object {
         private const val PROGRESS_COUNTER_INCREMENT = 1024 * 1024
+        private val locale = Locale.getDefault()
     }
 
     private var urlCounter : Int = 0
@@ -50,7 +52,7 @@ class LoggingStatusConsumer : StatusConsumer {
             is Result.Success -> {
                 totalBytes += result.bytes
                 val elapsed = System.currentTimeMillis() - downloadStart
-                println(" ${result.bytes.formatBytes} in ${elapsed.formatElapsed}.")
+                println(" ${result.bytes.formatBytes(locale)} in ${elapsed.formatElapsed}.")
                 downloadCounter++
             }
 
@@ -60,44 +62,49 @@ class LoggingStatusConsumer : StatusConsumer {
     }
 
     override fun onQueueCompleted(queue: URLQueue) {
-        val urls = String.format("%,d", urlCounter)
-        val downloads = String.format("%,d", downloadCounter)
+        val urls = String.format(locale, "%,d", urlCounter)
+        val downloads = String.format(locale, "%,d", downloadCounter)
         val elapsed = System.currentTimeMillis() - queueStart
         println("Download completed in ${elapsed.formatElapsed}.")
-        println("$urls URL(s): $downloads downloaded, ${totalBytes.formatBytes}.")
+        println("$urls URL(s): $downloads downloaded, ${totalBytes.formatBytes(locale)}.")
     }
 }
 
-private val Long.formatBytes : String
-    get() {
-        if (this < 1024) {
-            return String.format("%,d bytes", this)
+private const val BYTE_BOUNDARY = 1024f
+
+@Suppress("ReturnCount")
+private fun Long.formatBytes(locale: Locale) : String {
+        if (this < BYTE_BOUNDARY) {
+            return String.format(locale, "%,d bytes", this)
         }
 
-        val kb = this / 1024f
+        val kb = this / BYTE_BOUNDARY
 
-        if (kb < 1024f) {
-            return String.format("%,.1f KB", kb)
+        if (kb < BYTE_BOUNDARY) {
+            return String.format(locale, "%,.1f KB", kb)
         }
 
-        val mb = kb / 1024f
+        val mb = kb / BYTE_BOUNDARY
 
-        if (mb < 1024f) {
-            return String.format("%,.1f MB", mb)
+        if (mb < BYTE_BOUNDARY) {
+            return String.format(locale, "%,.1f MB", mb)
         }
 
-        val gb = mb / 1024f
+        val gb = mb / BYTE_BOUNDARY
 
-        return String.format("%,.1f GB", gb)
+        return String.format(locale, "%,.1f GB", gb)
     }
+
+private const val MILLIS_PER_SECOND = 1000
+private const val SECONDS_PER_MINUTE = 60
 
 private val Long.formatElapsed : String
     get()  {
-        val seconds = this / 1000
-        val minutes = seconds / 60
+        val seconds = this / MILLIS_PER_SECOND
+        val minutes = seconds / SECONDS_PER_MINUTE
 
         if (minutes > 0) {
-            return "$minutes m ${seconds % 60} s"
+            return "$minutes m ${seconds % SECONDS_PER_MINUTE} s"
         }
 
         if (seconds > 0) {
