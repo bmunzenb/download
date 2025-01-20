@@ -1,8 +1,8 @@
 [versions]
-okio = "3.+"
-clikt = "5.+"
-junit = "4.+"
-mockk = "1.+"
+okio = "3.10.2"
+clikt = "5.0.2"
+junit = "4.13.2"
+mockk = "1.13.16"
 
 [libraries]
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
