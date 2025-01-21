@@ -4,7 +4,6 @@ import java.net.URL
 import java.util.function.Consumer
 
 interface StatusConsumer : Consumer<Status> {
-
     override fun accept(status: Status) {
         when (status) {
             is Status.QueueStarted -> onQueueStarted(status.queue)
@@ -17,11 +16,22 @@ interface StatusConsumer : Consumer<Status> {
 
     fun onQueueStarted(queue: URLQueue) {}
 
-    fun onDownloadStarted(url: URL, target: Target) {}
+    fun onDownloadStarted(
+        url: URL,
+        target: Target,
+    ) {}
 
-    fun onDownloadProgress(url: URL, target: Target, bytes: Long) {}
+    fun onDownloadProgress(
+        url: URL,
+        target: Target,
+        bytes: Long,
+    ) {}
 
-    fun onDownloadResult(url: URL, target: Target, result: Result) {}
+    fun onDownloadResult(
+        url: URL,
+        target: Target,
+        result: Result,
+    ) {}
 
     fun onQueueCompleted(queue: URLQueue) {}
 }

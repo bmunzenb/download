@@ -9,15 +9,35 @@ import java.net.URL
 import java.util.function.Consumer
 
 sealed class Status {
-    data class QueueStarted(val queue: URLQueue) : Status()
-    data class DownloadStarted(val url: URL, val target: Target) : Status()
-    data class DownloadProgress(val url: URL, val target: Target, val bytes: Long) : Status()
-    data class DownloadResult(val url: URL, val target: Target, val result: Result) : Status()
-    data class QueueCompleted(val queue: URLQueue) : Status()
+    data class QueueStarted(
+        val queue: URLQueue,
+    ) : Status()
+
+    data class DownloadStarted(
+        val url: URL,
+        val target: Target,
+    ) : Status()
+
+    data class DownloadProgress(
+        val url: URL,
+        val target: Target,
+        val bytes: Long,
+    ) : Status()
+
+    data class DownloadResult(
+        val url: URL,
+        val target: Target,
+        val result: Result,
+    ) : Status()
+
+    data class QueueCompleted(
+        val queue: URLQueue,
+    ) : Status()
 }
 
-class Processor(private val requestProperties: Map<String, String> = emptyMap()) {
-
+class Processor(
+    private val requestProperties: Map<String, String> = emptyMap(),
+) {
     companion object {
         private const val BUFFER_SIZE = 8192
     }
@@ -25,9 +45,8 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,
-        callback: Consumer<Status> = LoggingStatusConsumer()
+        callback: Consumer<Status> = LoggingStatusConsumer(),
     ) {
-
         callback.accept(Status.QueueStarted(urlQueue))
 
         var result: Result = Result.First
@@ -35,7 +54,6 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
         var url = urlQueue.next(result)
 
         while (url != null) {
-
             val connection = url.openConnection()
             requestProperties.forEach { (k, v) ->
                 connection.setRequestProperty(k, v)
@@ -43,13 +61,14 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
 
             val target = targetFactory.create(url)
 
-            result = when (connection) {
-                is HttpURLConnection ->
-                    httpDownload(connection, target, callback)
+            result =
+                when (connection) {
+                    is HttpURLConnection ->
+                        httpDownload(connection, target, callback)
 
-                else ->
-                    Result.SourceNotSupported
-            }
+                    else ->
+                        Result.SourceNotSupported
+                }
 
             callback.accept(Status.DownloadResult(url, target, result))
 
@@ -59,8 +78,11 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
         callback.accept(Status.QueueCompleted(urlQueue))
     }
 
-    private fun httpDownload(connection: HttpURLConnection, target: Target, callback: Consumer<Status>): Result {
-
+    private fun httpDownload(
+        connection: HttpURLConnection,
+        target: Target,
+        callback: Consumer<Status>,
+    ): Result {
         val url: URL = connection.url
 
         callback.accept(Status.DownloadStarted(url, target))
@@ -77,8 +99,12 @@ class Processor(private val requestProperties: Map<String, String> = emptyMap())
         }
     }
 
-    private fun transfer(url: URL, input: InputStream, target: Target, callback: Consumer<Status>): Long {
-
+    private fun transfer(
+        url: URL,
+        input: InputStream,
+        target: Target,
+        callback: Consumer<Status>,
+    ): Long {
         val source = input.source().buffer()
         val sink = target.open().sink().buffer()
 

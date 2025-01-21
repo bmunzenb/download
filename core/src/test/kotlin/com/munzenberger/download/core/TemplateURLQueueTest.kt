@@ -5,10 +5,8 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class TemplateURLQueueTest {
-
     @Test
     fun `queue generates urls from template`() {
-
         val paramIterator = ListParamIterator(listOf(1, 'a'), listOf(2, 'b'), listOf(3, 'c'))
 
         val template = "http://example.com/%d/%s"
@@ -23,7 +21,6 @@ class TemplateURLQueueTest {
 
     @Test
     fun `increment until error continues until error`() {
-
         val paramIterator = IncrementUntilErrorParamIterator(0)
 
         assertEquals(listOf(0), paramIterator.next(Result.First))

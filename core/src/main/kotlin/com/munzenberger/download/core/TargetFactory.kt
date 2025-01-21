@@ -7,24 +7,28 @@ interface TargetFactory {
     fun create(source: URL): Target
 }
 
-class FileTargetFactory(private val file: File, private val append: Boolean = false) : TargetFactory {
-
+class FileTargetFactory(
+    private val file: File,
+    private val append: Boolean = false,
+) : TargetFactory {
     override fun create(source: URL) = FileTarget(file, append)
 }
 
-class FlatPathFileTargetFactory(private val baseDir: File, private val delimiter: Char = '_') : TargetFactory {
-
+class FlatPathFileTargetFactory(
+    private val baseDir: File,
+    private val delimiter: Char = '_',
+) : TargetFactory {
     override fun create(source: URL): Target {
-
         if (!baseDir.exists() && !baseDir.mkdirs()) {
             error("Could not mkdirs for $baseDir")
         }
 
         val filename = StringBuilder(source.host)
 
-        val parts = source.path
-            .split('/')
-            .filter { it.isNotEmpty() }
+        val parts =
+            source.path
+                .split('/')
+                .filter { it.isNotEmpty() }
 
         parts.forEach {
             filename.append(delimiter).append(it)
@@ -36,20 +40,22 @@ class FlatPathFileTargetFactory(private val baseDir: File, private val delimiter
     }
 }
 
-class URLPathFileTargetFactory(private val baseDir: File) : TargetFactory {
-
+class URLPathFileTargetFactory(
+    private val baseDir: File,
+) : TargetFactory {
     override fun create(source: URL): Target {
-
-        val path = StringBuilder(baseDir.path)
+        val path =
+            StringBuilder(baseDir.path)
                 .append(File.separator)
                 .append(source.host)
 
-        val parts = source.path
-            .split('/')
-            .filter { it.isNotEmpty() }
+        val parts =
+            source.path
+                .split('/')
+                .filter { it.isNotEmpty() }
 
         // the last part is the filename
-        parts.take(parts.size-1).forEach {
+        parts.take(parts.size - 1).forEach {
             path.append(File.separator).append(it)
         }
 

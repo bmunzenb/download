@@ -8,8 +8,10 @@ interface Target {
     fun open(): OutputStream
 }
 
-class FileTarget(val file: File, private val append: Boolean = false) : Target {
-
+class FileTarget(
+    val file: File,
+    private val append: Boolean = false,
+) : Target {
     constructor(path: String, append: Boolean = false) : this(File(path), append)
 
     override fun open(): OutputStream = FileOutputStream(file, append)

@@ -16,7 +16,6 @@ import com.munzenberger.download.core.URLPathFileTargetFactory
 import java.io.File
 
 class DownloadCommand : CliktCommand() {
-
     private val template by option("--template")
         .required()
         .help("Incrementing URL template")
@@ -41,23 +40,25 @@ class DownloadCommand : CliktCommand() {
         .help("Value for referer request header")
 
     override fun run() {
-
-        val paramIterator = when (val end = incrementEnd) {
-            null -> IncrementUntilErrorParamIterator(incrementStart)
-            else -> IntRangeParamIterator(incrementStart..end)
-        }
+        val paramIterator =
+            when (val end = incrementEnd) {
+                null -> IncrementUntilErrorParamIterator(incrementStart)
+                else -> IntRangeParamIterator(incrementStart..end)
+            }
 
         val queue = TemplateURLQueue(template, paramIterator)
 
-        val targetFactory = when (val file = appendOutputFile) {
-            null -> URLPathFileTargetFactory(File("."))
-            else -> FileTargetFactory(file, true)
-        }
+        val targetFactory =
+            when (val file = appendOutputFile) {
+                null -> URLPathFileTargetFactory(File("."))
+                else -> FileTargetFactory(file, true)
+            }
 
-        val requestProperties = mutableMapOf<String,String>().apply {
-            userAgent?.let { put("User-agent", it) }
-            referer?.let { put("Referer", it) }
-        }
+        val requestProperties =
+            mutableMapOf<String, String>().apply {
+                userAgent?.let { put("User-agent", it) }
+                referer?.let { put("Referer", it) }
+            }
 
         Processor(requestProperties).download(queue, targetFactory)
     }
