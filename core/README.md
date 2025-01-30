@@ -101,17 +101,17 @@ Examples:
 
 ```kotlin
 // Download all files to the same directory
-val targetFactory = FlatPathFileTargetFactory(baseDir = File("/path/to/downloads"))
+val targetFactory = FlatPathFileTargetFactory(baseDir = Path.of("/path/to/downloads"))
 ```
 
 ```kotlin
 // Create a directory structure matching the URLs for each file
-val targetFactory = URLPathFileTargetFactory(baseDir = File("/downloads"))
+val targetFactory = URLPathFileTargetFactory(baseDir = Path.of("/downloads"))
 ```
 
 ```kotlin
 // Concatenate all downloads into one file
-val targetFactory = FileTargetFactory(file = File("video.ts"), append = true)
+val targetFactory = FileTargetFactory(path = Path.of("video.ts"), append = true)
 ```
 
 #### Implementing your own `TargetFactory`
@@ -156,21 +156,18 @@ val processor = Processor(headers)
 
 By default, the `Processor` will log all activity to the console, but you can override
 and/or augment this behavior by passing an implementation of `Consumer<Status>` to the
-download function.
+download function.  (Note: There is also a `StatusConsumer` convenience interface that
+extends `Consumer<Status>` but allows overriding a function for each `Status` type.)
 
 In this example, we augment the logging callback with one that will delete small files:
 
 ```kotlin
-val deleteSmallFiles = Consumer<Status> { status ->
-   if (status is Status.DownloadResult) {
-      val result = status.result
-      val target = status.target
-
-      // delete the downloaded file if it is smaller than 1 KB
+val deleteSmallFiles = object : StatusConsumer {
+   override fun onDownloadResult(url: URL, target: Target, result: Result) {
+      // delete the downloaded file if it is less than 1 KB
       if (result is Result.Success && result.bytes < 1024 && target is FileTarget) {
-         if (target.file.delete()) {
-            println("Deleted ${target.file}")
-         }
+         Files.delete(target.path)
+         println("Deleted ${target.path}")
       }
    }
 }

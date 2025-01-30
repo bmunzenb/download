@@ -13,7 +13,7 @@ import com.munzenberger.download.core.IntRangeParamIterator
 import com.munzenberger.download.core.Processor
 import com.munzenberger.download.core.TemplateURLQueue
 import com.munzenberger.download.core.URLPathFileTargetFactory
-import java.io.File
+import java.nio.file.Path
 
 class DownloadCommand : CliktCommand() {
     private val template by option("--template")
@@ -50,8 +50,8 @@ class DownloadCommand : CliktCommand() {
 
         val targetFactory =
             when (val file = appendOutputFile) {
-                null -> URLPathFileTargetFactory(File("."))
-                else -> FileTargetFactory(file, true)
+                null -> URLPathFileTargetFactory(Path.of("."))
+                else -> FileTargetFactory(file.toPath(), true)
             }
 
         val requestProperties =

@@ -1,20 +1,30 @@
 package com.munzenberger.download.core
 
-import java.io.File
-import java.io.FileOutputStream
 import java.io.OutputStream
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 
 interface Target {
     fun open(): OutputStream
 }
 
 class FileTarget(
-    val file: File,
+    val path: Path,
     private val append: Boolean = false,
 ) : Target {
-    constructor(path: String, append: Boolean = false) : this(File(path), append)
+    @Suppress("SpreadOperator")
+    override fun open(): OutputStream {
+        val openOptions =
+            buildList {
+                add(StandardOpenOption.CREATE)
+                if (append) {
+                    add(StandardOpenOption.APPEND)
+                }
+            }.toTypedArray()
 
-    override fun open(): OutputStream = FileOutputStream(file, append)
+        return Files.newOutputStream(path, *openOptions)
+    }
 
-    override fun toString() = file.toString()
+    override fun toString() = path.toString()
 }
