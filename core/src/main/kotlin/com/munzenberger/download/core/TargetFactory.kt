@@ -4,7 +4,7 @@ import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 
-interface TargetFactory {
+fun interface TargetFactory {
     fun create(source: URL): Target
 }
 

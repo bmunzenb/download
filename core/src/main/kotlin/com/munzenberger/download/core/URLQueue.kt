@@ -3,7 +3,7 @@ package com.munzenberger.download.core
 import java.net.URI
 import java.net.URL
 
-interface URLQueue {
+fun interface URLQueue {
     fun next(result: Result): URL?
 
     companion object {

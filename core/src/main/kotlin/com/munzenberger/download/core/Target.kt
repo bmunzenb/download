@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
-interface Target {
+fun interface Target {
     fun open(): OutputStream
 }
 
