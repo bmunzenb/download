@@ -30,7 +30,7 @@ interface StatusConsumer : Consumer<Status> {
     fun onDownloadResult(
         url: URL,
         target: Target,
-        result: Result,
+        result: Result<ResultData>,
     ) {}
 
     fun onQueueCompleted(queue: URLQueue) {}

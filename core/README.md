@@ -76,12 +76,11 @@ You can implement custom logic for a `URLQueue` by implementing its interface co
 of the function:
 
 ```kotlin
-fun next(result: Result) : URL?
+fun next(result: Result<ResultData>) : URL?
 ```
 
-This function takes the `Result` of the previous download (or `Result.First` if it's
-the first URL being requested), and should return a `URL` for the next URL in the queue,
-or `null` if there are no further URLs.
+This function takes the Kotlin `Result` of the previous download, and should return a
+`URL` for the next URL in the queue, or `null` if there are no further URLs.
 
 ### Step 2: Define a target factory
 
@@ -163,11 +162,13 @@ In this example, we augment the logging callback with one that will delete small
 
 ```kotlin
 val deleteSmallFiles = object : StatusConsumer {
-   override fun onDownloadResult(url: URL, target: Target, result: Result) {
-      // delete the downloaded file if it is less than 1 KB
-      if (result is Result.Success && result.bytes < 1024 && target is FileTarget) {
-         Files.delete(target.path)
-         println("Deleted ${target.path}")
+   override fun onDownloadResult(url: URL, target: Target, result: Result<ResultData>) {
+      result.onSuccess { data ->
+         // delete the downloaded file if it is less than 1 KB
+         if (data.bytes < 1024 && target is FileTarget) {
+            Files.delete(target.path)
+            println("Deleted ${target.path}")
+         }
       }
    }
 }

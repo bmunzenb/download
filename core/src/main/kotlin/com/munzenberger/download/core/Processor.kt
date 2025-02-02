@@ -8,6 +8,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.function.Consumer
 
+data class ResultData(
+    val bytes: Long,
+)
+
 sealed class Status {
     data class QueueStarted(
         val queue: URLQueue,
@@ -27,7 +31,7 @@ sealed class Status {
     data class DownloadResult(
         val url: URL,
         val target: Target,
-        val result: Result,
+        val result: Result<ResultData>,
     ) : Status()
 
     data class QueueCompleted(
@@ -37,11 +41,8 @@ sealed class Status {
 
 class Processor(
     private val requestProperties: Map<String, String> = emptyMap(),
+    private val bufferSize: Int = 8192,
 ) {
-    companion object {
-        private const val BUFFER_SIZE = 8192
-    }
-
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,
@@ -49,25 +50,25 @@ class Processor(
     ) {
         callback.accept(Status.QueueStarted(urlQueue))
 
-        var result: Result = Result.First
-
-        var url = urlQueue.next(result)
+        var url = urlQueue.next(Result.success(ResultData(-1)))
 
         while (url != null) {
-            val connection = url.openConnection()
-            requestProperties.forEach { (k, v) ->
-                connection.setRequestProperty(k, v)
-            }
+            val connection =
+                url.openConnection().also { connection ->
+                    requestProperties.forEach { (key, value) ->
+                        connection.setRequestProperty(key, value)
+                    }
+                }
 
             val target = targetFactory.create(url)
 
-            result =
+            val result =
                 when (connection) {
                     is HttpURLConnection ->
                         httpDownload(connection, target, callback)
 
                     else ->
-                        Result.SourceNotSupported
+                        Result.failure(SourceNotSupportedException(url))
                 }
 
             callback.accept(Status.DownloadResult(url, target, result))
@@ -82,19 +83,19 @@ class Processor(
         connection: HttpURLConnection,
         target: Target,
         callback: Consumer<Status>,
-    ): Result {
+    ): Result<ResultData> {
         val url: URL = connection.url
 
         callback.accept(Status.DownloadStarted(url, target))
 
         return when (val code = connection.responseCode) {
             HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
-                val bytes = transfer(url, connection.inputStream, target, callback)
-                Result.Success(bytes)
+                val data = transfer(url, connection.inputStream, target, callback)
+                Result.success(data)
             }
 
             else -> {
-                Result.Error(code)
+                Result.failure(HttpException(code))
             }
         }
     }
@@ -104,7 +105,7 @@ class Processor(
         input: InputStream,
         target: Target,
         callback: Consumer<Status>,
-    ): Long {
+    ): ResultData {
         val source = input.source().buffer()
         val sink = target.open().sink().buffer()
 
@@ -112,7 +113,7 @@ class Processor(
             sink.use { outSink ->
 
                 var total: Long = 0
-                val byteArray = ByteArray(BUFFER_SIZE)
+                val byteArray = ByteArray(bufferSize)
                 var b = inSource.read(byteArray, 0, byteArray.size)
 
                 while (b > 0) {
@@ -122,7 +123,7 @@ class Processor(
                     b = inSource.read(byteArray, 0, byteArray.size)
                 }
 
-                total
+                ResultData(total)
             }
         }
     }

@@ -49,24 +49,27 @@ class LoggingStatusConsumer : StatusConsumer {
     override fun onDownloadResult(
         url: URL,
         target: Target,
-        result: Result,
+        result: Result<ResultData>,
     ) {
-        when (result) {
-            is Result.Error ->
-                println(" error ${result.code}.")
+        result.onSuccess { data ->
+            totalBytes += data.bytes
+            val elapsed = System.currentTimeMillis() - downloadStart
+            println(" ${data.bytes.formatBytes(locale)} in ${elapsed.formatElapsed}.")
+            downloadCounter++
+        }
 
-            is Result.SourceNotSupported ->
-                println(" source not supported: $url")
-
-            is Result.Success -> {
-                totalBytes += result.bytes
-                val elapsed = System.currentTimeMillis() - downloadStart
-                println(" ${result.bytes.formatBytes(locale)} in ${elapsed.formatElapsed}.")
-                downloadCounter++
+        result.onFailure { error ->
+            when (error) {
+                is SourceNotSupportedException -> {
+                    println(" source not supported: ${error.url}")
+                }
+                is HttpException -> {
+                    println(" HTTP ${error.code}.")
+                }
+                else -> {
+                    println(" ${error.message}.")
+                }
             }
-
-            else ->
-                println(" $result.")
         }
     }
 
