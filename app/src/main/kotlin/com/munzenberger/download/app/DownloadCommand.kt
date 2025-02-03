@@ -5,8 +5,8 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.path
 import com.munzenberger.download.core.FileTargetFactory
 import com.munzenberger.download.core.IncrementUntilErrorParamIterator
 import com.munzenberger.download.core.IntRangeParamIterator
@@ -29,8 +29,8 @@ class DownloadCommand : CliktCommand() {
         .int()
         .help("End value, otherwise increment until error")
 
-    private val appendOutputFile by option("--append")
-        .file()
+    private val appendOutputPath by option("--append")
+        .path()
         .help("Appends each download to this file")
 
     private val userAgent by option("--user-agent")
@@ -49,9 +49,9 @@ class DownloadCommand : CliktCommand() {
         val queue = TemplateURLQueue(template, paramIterator)
 
         val targetFactory =
-            when (val file = appendOutputFile) {
+            when (val path = appendOutputPath) {
                 null -> URLPathFileTargetFactory(Path.of("."))
-                else -> FileTargetFactory(file.toPath(), true)
+                else -> FileTargetFactory(path, true)
             }
 
         val requestProperties =

@@ -82,6 +82,15 @@ fun next(result: Result<ResultData>) : URL?
 This function takes the Kotlin `Result` of the previous download, and should return a
 `URL` for the next URL in the queue, or `null` if there are no further URLs.
 
+#### Composing queues
+
+You can compose multiple `URLQueue`s together with the plus operator:
+
+```kotlin
+// queue1, queue2, and queue3 all implement URLQueue
+val composedQueue = queue1 + queue2 + queue3
+```
+
 ### Step 2: Define a target factory
 
 Create a `TargetFactory` that defines where the contents of a URL should be written to

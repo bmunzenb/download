@@ -19,9 +19,36 @@ fun interface URLQueue {
                         else -> null
                     }
 
-                override fun toString(): String = "${URLQueue::class.java.name}(size=${urls.size})"
+                override fun toString(): String = "${URLQueue::class.java.simpleName}(size=${urls.size})"
             }
     }
+
+    operator fun plus(other: URLQueue): URLQueue = CompositeURLQueue(this, other)
+}
+
+private class CompositeURLQueue(
+    private val left: URLQueue,
+    private val right: URLQueue,
+) : URLQueue {
+    var isLeft = true
+
+    override fun next(result: Result<ResultData>): URL? {
+        val url =
+            if (isLeft) {
+                left.next(result)
+            } else {
+                right.next(result)
+            }
+
+        return if (url == null && isLeft) {
+            isLeft = false
+            next(result)
+        } else {
+            url
+        }
+    }
+
+    override fun toString(): String = "${this::class.java.simpleName}(left=$left, right=$right)"
 }
 
 class TemplateURLQueue(
