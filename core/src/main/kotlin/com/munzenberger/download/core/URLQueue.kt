@@ -48,7 +48,7 @@ private class CompositeURLQueue(
         }
     }
 
-    override fun toString(): String = "${this::class.java.simpleName}(left=$left, right=$right)"
+    override fun toString(): String = "${this::class.simpleName}(left=$left, right=$right)"
 }
 
 class TemplateURLQueue(
@@ -67,11 +67,11 @@ class TemplateURLQueue(
         }
 
     @Suppress("MaxLineLength")
-    override fun toString(): String = "${this::class.java.name}(urlTemplate=$urlTemplate, paramIterator=${paramIterator::class.java.name})"
+    override fun toString(): String = "${this::class.simpleName}(template=$urlTemplate, paramIterator=$paramIterator)"
 }
 
 class IncrementUntilErrorParamIterator(
-    start: Int,
+    private val start: Int,
 ) : TemplateURLQueue.ParamIterator {
     private var value = start
 
@@ -84,10 +84,12 @@ class IncrementUntilErrorParamIterator(
             }
             else -> null
         }
+
+    override fun toString(): String = "${this::class.simpleName}(start=$start)"
 }
 
 class IntRangeParamIterator(
-    range: IntRange,
+    private val range: IntRange,
 ) : TemplateURLQueue.ParamIterator {
     private var value = range.iterator()
 
@@ -96,11 +98,14 @@ class IntRangeParamIterator(
             true -> listOf(value.nextInt())
             else -> null
         }
+
+    override fun toString(): String = "${this::class.simpleName}(range=$range)"
 }
 
 class ListParamIterator(
     vararg params: List<Any>,
 ) : TemplateURLQueue.ParamIterator {
+    private val size = params.size
     private val iterator = params.iterator()
 
     override fun next(result: Result<ResultData>): List<Any>? =
@@ -108,4 +113,6 @@ class ListParamIterator(
             true -> iterator.next()
             else -> null
         }
+
+    override fun toString(): String = "${this::class.simpleName}(size=$size)"
 }

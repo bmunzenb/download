@@ -17,7 +17,7 @@ class TemplateURLQueueTest {
         val queue = TemplateURLQueue(template, paramIterator)
 
         assertEquals("http://example.com/1/a", queue.next(success).toString())
-        assertEquals("http://example.com/2/b", queue.next(success).toString())
+        assertEquals("http://example.com/2/b", queue.next(failure).toString())
         assertEquals("http://example.com/3/c", queue.next(success).toString())
         assertNull(queue.next(success))
     }
@@ -29,5 +29,15 @@ class TemplateURLQueueTest {
         assertEquals(listOf(0), paramIterator.next(success))
         assertEquals(listOf(1), paramIterator.next(success))
         assertNull(paramIterator.next(failure))
+    }
+
+    @Test
+    fun `range iterates over range even when failure`() {
+        val paramIterator = IntRangeParamIterator(1..3)
+
+        assertEquals(listOf(1), paramIterator.next(success))
+        assertEquals(listOf(2), paramIterator.next(failure))
+        assertEquals(listOf(3), paramIterator.next(success))
+        assertNull(paramIterator.next(success))
     }
 }
