@@ -79,8 +79,8 @@ of the function:
 fun next(result: Result<ResultData>) : URL?
 ```
 
-This function takes the Kotlin `Result` of the previous download, and should return a
-`URL` for the next URL in the queue, or `null` if there are no further URLs.
+This function takes the Kotlin `Result` of the previous download (or `ResultFirst` if it's the first call), and should
+return a `URL` for the next URL in the queue, or `null` if there are no further URLs.
 
 #### Composing queues
 
@@ -90,6 +90,9 @@ You can compose multiple `URLQueue`s together with the plus operator:
 // queue1, queue2, and queue3 all implement URLQueue
 val composedQueue = queue1 + queue2 + queue3
 ```
+
+*Note that each queue in a composed queue will receive a `ResultFirst` when the first URL is requested, and not the
+result of the last download when the previous queue in the chain returns `null`.*
 
 ### Step 2: Define a target factory
 

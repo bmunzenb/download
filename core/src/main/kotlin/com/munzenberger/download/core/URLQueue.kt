@@ -42,7 +42,7 @@ private class CompositeURLQueue(
 
         return if (url == null && isLeft) {
             isLeft = false
-            next(result)
+            next(ResultFirst)
         } else {
             url
         }

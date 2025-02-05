@@ -12,6 +12,8 @@ data class ResultData(
     val bytes: Long,
 )
 
+val ResultFirst = Result.success(ResultData(-1))
+
 sealed class Status {
     data class QueueStarted(
         val queue: URLQueue,
@@ -50,7 +52,7 @@ class Processor(
     ) {
         callback.accept(Status.QueueStarted(urlQueue))
 
-        var url = urlQueue.next(Result.success(ResultData(-1)))
+        var url = urlQueue.next(ResultFirst)
 
         while (url != null) {
             val connection =
