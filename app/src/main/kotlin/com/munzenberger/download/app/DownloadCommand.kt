@@ -55,7 +55,7 @@ class DownloadCommand : CliktCommand() {
             }
 
         val requestProperties =
-            mutableMapOf<String, String>().apply {
+            buildMap {
                 userAgent?.let { put("User-agent", it) }
                 referer?.let { put("Referer", it) }
             }
