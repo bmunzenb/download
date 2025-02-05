@@ -3,12 +3,12 @@ package com.munzenberger.download.core
 import java.net.URL
 import java.util.Locale
 
-class LoggingStatusConsumer : StatusConsumer {
-    companion object {
-        private const val PROGRESS_COUNTER_INCREMENT = 1024 * 1024
-        private val locale = Locale.getDefault()
-    }
+private const val ONE_MEGABYTE = 1024 * 1024
 
+class LoggingStatusConsumer(
+    private val locale: Locale = Locale.getDefault(),
+    private val progressIndicatorIncrementInBytes: Int = ONE_MEGABYTE,
+) : StatusConsumer {
     private var urlCounter: Int = 0
     private var downloadCounter: Int = 0
     private var progressCounter: Int = 0
@@ -40,7 +40,7 @@ class LoggingStatusConsumer : StatusConsumer {
         target: Target,
         bytes: Long,
     ) {
-        if (progressCounter * PROGRESS_COUNTER_INCREMENT < bytes) {
+        if (progressCounter * progressIndicatorIncrementInBytes < bytes) {
             print(".") // print a period for each megabyte downloaded as an indeterminate progress indicator
             progressCounter++
         }
