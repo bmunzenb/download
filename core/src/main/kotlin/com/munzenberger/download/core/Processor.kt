@@ -43,8 +43,12 @@ sealed class Status {
 
 class Processor(
     private val requestProperties: Map<String, String> = emptyMap(),
-    private val bufferSize: Int = 8192,
+    private val bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ) {
+    companion object {
+        const val DEFAULT_BUFFER_SIZE = 8192
+    }
+
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,

@@ -39,6 +39,11 @@ class DownloadCommand : CliktCommand() {
     private val referer by option("--referer")
         .help("Value for referer request header")
 
+    private val bufferSize by option("--buffer-size")
+        .int()
+        .default(Processor.DEFAULT_BUFFER_SIZE)
+        .help("Size of download buffer in bytes (defaults to ${Processor.DEFAULT_BUFFER_SIZE})")
+
     override fun run() {
         val paramIterator =
             when (val end = incrementEnd) {
@@ -60,6 +65,9 @@ class DownloadCommand : CliktCommand() {
                 referer?.let { put("Referer", it) }
             }
 
-        Processor(requestProperties).download(queue, targetFactory)
+        Processor(
+            requestProperties = requestProperties,
+            bufferSize = bufferSize,
+        ).download(queue, targetFactory)
     }
 }
