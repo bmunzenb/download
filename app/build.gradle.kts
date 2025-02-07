@@ -3,10 +3,6 @@ plugins {
     application
 }
 
-repositories {
-    mavenCentral()
-}
-
 application {
     mainClass.set("com.munzenberger.download.app.MainKt")
     applicationName = "download"

@@ -4,10 +4,6 @@ plugins {
     `maven-publish`
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     api(libs.okio)
 
