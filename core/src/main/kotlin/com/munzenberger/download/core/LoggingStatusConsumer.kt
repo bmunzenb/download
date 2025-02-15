@@ -85,7 +85,7 @@ class LoggingStatusConsumer(
 private const val BYTE_BOUNDARY = 1024f
 
 @Suppress("ReturnCount")
-private fun Long.formatBytes(locale: Locale): String {
+fun Long.formatBytes(locale: Locale): String {
     if (this < BYTE_BOUNDARY) {
         return String.format(locale, "%,d bytes", this)
     }
@@ -110,7 +110,7 @@ private fun Long.formatBytes(locale: Locale): String {
 private const val MILLIS_PER_SECOND = 1000
 private const val SECONDS_PER_MINUTE = 60
 
-private val Long.formatElapsed: String
+val Long.formatElapsed: String
     get() {
         val seconds = this / MILLIS_PER_SECOND
         val minutes = seconds / SECONDS_PER_MINUTE
