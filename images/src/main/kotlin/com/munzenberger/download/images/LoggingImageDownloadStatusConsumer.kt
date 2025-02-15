@@ -9,6 +9,7 @@ class LoggingImageDownloadStatusConsumer(
     // statistics
     private var queueStart: Long = 0
     private var jobCount: Int = 0
+    private var linkStart: Long = 0
 
     override fun onStartProcessQueue() {
         queueStart = System.currentTimeMillis()
@@ -31,6 +32,7 @@ class LoggingImageDownloadStatusConsumer(
     }
 
     override fun onStartProcessLink(url: String) {
+        linkStart = System.currentTimeMillis()
         print("Processing $url ...")
     }
 
@@ -39,35 +41,43 @@ class LoggingImageDownloadStatusConsumer(
         images: Int,
         links: Int,
     ) {
+        val elapsed = System.currentTimeMillis() - linkStart
         val str =
             when {
                 images > 0 && links > 0 ->
                     String.format(
                         locale,
-                        " added %,d %s and %,d %s to queue.",
+                        " added %,d %s and %,d %s to queue in %s.",
                         images,
                         "image".pluralize(images),
                         links,
                         "link".pluralize(links),
+                        elapsed.formatElapsed,
                     )
                 images > 0 -> {
                     String.format(
                         locale,
-                        " added %,d %s to queue.",
+                        " added %,d %s to queue in %s.",
                         images,
                         "image".pluralize(images),
+                        elapsed.formatElapsed,
                     )
                 }
                 links > 0 -> {
                     String.format(
                         locale,
-                        " added %,d %s to queue.",
+                        " added %,d %s to queue in %s.",
                         links,
                         "link".pluralize(links),
+                        elapsed.formatElapsed,
                     )
                 }
                 else -> {
-                    " done."
+                    String.format(
+                        locale,
+                        " done in %s.",
+                        elapsed.formatElapsed,
+                    )
                 }
             }
         println(str)

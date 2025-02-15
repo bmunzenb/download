@@ -58,7 +58,7 @@ internal class LinkJob(
                 .toSet()
 
         if (images.isNotEmpty()) {
-            images.forEach(processedRegistry::addQueued)
+            images.forEach(processedRegistry::addQueuedImage)
             addToQueue.invoke(
                 ImagesJob(
                     images,
@@ -80,7 +80,7 @@ internal class LinkJob(
                 .toSet()
 
         links.forEach {
-            processedRegistry.addQueued(it)
+            processedRegistry.addQueuedLink(it)
             addToQueue(
                 LinkJob(
                     it,
@@ -94,13 +94,13 @@ internal class LinkJob(
             )
         }
 
-        processedRegistry.addProcessed(url)
+        processedRegistry.addProcessedLink(url)
         return images.size to links.size
     }
 
     private fun processAsImage(url: String): Pair<Int, Int> {
         if (imageFilter.apply(url)) {
-            processedRegistry.addQueued(url)
+            processedRegistry.addQueuedImage(url)
             addToQueue.invoke(
                 ImagesJob(
                     listOf(url),
@@ -128,7 +128,7 @@ private class ImagesJob(
                     target: Target,
                     result: Result<ResultData>,
                 ) {
-                    processedRegistry.addProcessed(url.toExternalForm())
+                    processedRegistry.addProcessedImage(url.toExternalForm())
                 }
             }
 

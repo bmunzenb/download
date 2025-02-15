@@ -15,7 +15,7 @@ class ImageDownloader(
     private val jobQueue = mutableListOf<DownloadJob>()
 
     fun execute(url: String) {
-        processedRegistry.addQueued(url)
+        processedRegistry.addQueuedLink(url)
         jobQueue.add(
             LinkJob(
                 url = url,
