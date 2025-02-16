@@ -25,14 +25,15 @@ class FlatPathFileTargetFactory(
             Files.createDirectories(baseDir)
         }
 
-        val filename = if (fileOnly) {
-            source.pathParts.last()
-        } else {
-            buildString {
-                append(source.host)
-                source.pathParts.forEach { append(delimiter).append(it) }
+        val filename =
+            if (fileOnly) {
+                source.pathParts.last()
+            } else {
+                buildString {
+                    append(source.host)
+                    source.pathParts.forEach { append(delimiter).append(it) }
+                }
             }
-        }
 
         val path = baseDir.resolve(filename)
 

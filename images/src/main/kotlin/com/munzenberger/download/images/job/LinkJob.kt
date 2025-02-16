@@ -1,26 +1,20 @@
-package com.munzenberger.download.images
+package com.munzenberger.download.images.job
 
-import com.munzenberger.download.core.LoggingStatusConsumer
-import com.munzenberger.download.core.Processor
-import com.munzenberger.download.core.ResultData
-import com.munzenberger.download.core.StatusConsumer
-import com.munzenberger.download.core.Target
 import com.munzenberger.download.core.TargetFactory
-import com.munzenberger.download.core.URLQueue
+import com.munzenberger.download.images.ImageDownloadStatus
+import com.munzenberger.download.images.registry.QueuedURL
+import com.munzenberger.download.images.registry.URLRegistry
 import org.jsoup.Jsoup
 import java.io.InputStream
 import java.net.URI
-import java.net.URL
 import java.util.function.Consumer
 import java.util.function.Function
-
-fun interface DownloadJob : Runnable
 
 @Suppress("LongParameterList")
 internal class LinkJob(
     private val url: String,
     private val referer: String,
-    private val processedRegistry: ProcessedRegistry,
+    private val urlRegistry: URLRegistry,
     private val linkFilter: Function<String, Boolean>,
     private val imageFilter: Function<String, Boolean>,
     private val addToQueue: (DownloadJob) -> Unit,
@@ -43,7 +37,7 @@ internal class LinkJob(
                 else -> processAsHtml(connection.getInputStream(), url)
             }
 
-        processedRegistry.addProcessedLink(url)
+        urlRegistry.addProcessedLink(url)
         callback.accept(ImageDownloadStatus.EndProcessLink(url, images, links))
     }
 
@@ -59,20 +53,18 @@ internal class LinkJob(
                 .stream()
                 .map { it.attr("abs:src") }
                 .filter { it.isNotBlank() }
-                .filter { !processedRegistry.contains(it) }
+                .filter { !urlRegistry.contains(it) }
                 .filter { imageFilter.apply(it) }
                 .toList()
                 .toSet()
 
         if (images.isNotEmpty()) {
-            images.forEach {
-                processedRegistry.addQueuedImage(QueuedUrl(it, url))
-            }
+            urlRegistry.addQueuedImages(images.map { QueuedURL(it, url) })
             addToQueue.invoke(
                 ImagesJob(
                     images,
                     targetFactory.invoke(url),
-                    processedRegistry,
+                    urlRegistry,
                 ),
             )
         }
@@ -81,27 +73,30 @@ internal class LinkJob(
             doc
                 .getElementsByTag("a")
                 .stream()
+                .filter { !it.attr("href").startsWith("#") }
                 .map { it.attr("abs:href") }
                 .filter { it.isNotBlank() }
-                .filter { !processedRegistry.contains(it) }
+                .filter { !urlRegistry.contains(it) }
                 .filter { linkFilter.apply(it) || imageFilter.apply(it) }
                 .toList()
                 .toSet()
 
-        links.forEach {
-            processedRegistry.addQueuedLink(QueuedUrl(it, referer))
-            addToQueue(
-                LinkJob(
-                    it,
-                    url,
-                    processedRegistry,
-                    linkFilter,
-                    imageFilter,
-                    addToQueue,
-                    targetFactory,
-                    callback,
-                ),
-            )
+        if (links.isNotEmpty()) {
+            urlRegistry.addQueuedLinks(links.map { QueuedURL(it, url) })
+            links.forEach {
+                addToQueue(
+                    LinkJob(
+                        it,
+                        url,
+                        urlRegistry,
+                        linkFilter,
+                        imageFilter,
+                        addToQueue,
+                        targetFactory,
+                        callback,
+                    ),
+                )
+            }
         }
 
         return Stats(images.size, links.size)
@@ -112,42 +107,17 @@ internal class LinkJob(
         referer: String,
     ): Stats {
         if (imageFilter.apply(url)) {
-            processedRegistry.addQueuedImage(QueuedUrl(url, referer))
+            urlRegistry.addQueuedImages(listOf(QueuedURL(url, referer)))
             addToQueue.invoke(
                 ImagesJob(
                     listOf(url),
                     targetFactory.invoke(referer),
-                    processedRegistry,
+                    urlRegistry,
                 ),
             )
             return Stats(images = 1)
         } else {
             return Stats()
         }
-    }
-}
-
-internal class ImagesJob(
-    private val images: Collection<String>,
-    private val targetFactory: TargetFactory,
-    private val processedRegistry: ProcessedRegistry,
-) : DownloadJob {
-    override fun run() {
-        val markAsProcessed =
-            object : StatusConsumer {
-                override fun onDownloadResult(
-                    url: URL,
-                    target: Target,
-                    result: Result<ResultData>,
-                ) {
-                    processedRegistry.addProcessedImage(url.toExternalForm())
-                }
-            }
-
-        Processor().download(
-            URLQueue.of(images),
-            targetFactory,
-            LoggingStatusConsumer().andThen(markAsProcessed),
-        )
     }
 }

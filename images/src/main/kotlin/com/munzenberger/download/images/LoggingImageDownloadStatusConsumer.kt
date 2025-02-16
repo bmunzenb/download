@@ -1,6 +1,7 @@
 package com.munzenberger.download.images
 
 import com.munzenberger.download.core.formatElapsed
+import com.munzenberger.download.images.job.DownloadJob
 import java.util.Locale
 
 class LoggingImageDownloadStatusConsumer(

@@ -1,5 +1,7 @@
 package com.munzenberger.download.images
 
+import com.munzenberger.download.images.job.DownloadJob
+
 sealed class ImageDownloadStatus {
     data object StartProcessQueue : ImageDownloadStatus()
 

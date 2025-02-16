@@ -1,12 +1,26 @@
-package com.munzenberger.download.images
+package com.munzenberger.download.images.registry
 
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 
-class FlatFileProcessedRegistry(
+@Suppress("TooManyFunctions")
+class PersistedURLRegistry(
     rootPath: Path,
-) : InMemoryProcessedRegistry() {
+) : URLRegistry {
+    private val queuedLinks: MutableMap<String, String> = mutableMapOf()
+    private val processedLinks: MutableSet<String> = mutableSetOf()
+    private val queuedImages: MutableMap<String, String> = mutableMapOf()
+    private val processedImages: MutableSet<String> = mutableSetOf()
+
+    private val registry =
+        InMemoryURLRegistry(
+            queuedLinks,
+            processedLinks,
+            queuedImages,
+            processedImages,
+        )
+
     private val queuedLinksFile = rootPath.resolve("links.queued")
     private val processedLinksFile = rootPath.resolve("links.processed")
     private val queuedImagesFile = rootPath.resolve("images.queued")
@@ -72,25 +86,31 @@ class FlatFileProcessedRegistry(
         Files.write(path, processed, StandardOpenOption.TRUNCATE_EXISTING)
     }
 
-    override fun addQueuedLink(queuedUrl: QueuedUrl) {
-        super.addQueuedLink(queuedUrl)
+    override fun addQueuedLinks(queuedUrls: Collection<QueuedURL>) {
+        registry.addQueuedLinks(queuedUrls)
         writeTo(queuedLinks, queuedLinksFile)
     }
 
     override fun addProcessedLink(url: String) {
-        super.addProcessedLink(url)
+        registry.addProcessedLink(url)
         writeTo(queuedLinks, queuedLinksFile)
         writeTo(processedLinks, processedLinksFile)
     }
 
-    override fun addQueuedImage(queuedUrl: QueuedUrl) {
-        super.addQueuedImage(queuedUrl)
+    override fun addQueuedImages(queuedUrls: Collection<QueuedURL>) {
+        registry.addQueuedImages(queuedUrls)
         writeTo(queuedImages, queuedImagesFile)
     }
 
     override fun addProcessedImage(url: String) {
-        super.addProcessedImage(url)
+        registry.addProcessedImage(url)
         writeTo(queuedImages, queuedImagesFile)
         writeTo(processedImages, processedImagesFile)
     }
+
+    override fun getQueuedLinks() = registry.getQueuedLinks()
+
+    override fun getQueuedImages() = registry.getQueuedImages()
+
+    override fun contains(url: String) = registry.contains(url)
 }

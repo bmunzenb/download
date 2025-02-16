@@ -1,6 +1,12 @@
 package com.munzenberger.download.images
 
 import com.munzenberger.download.core.TargetFactory
+import com.munzenberger.download.images.job.DownloadJob
+import com.munzenberger.download.images.job.ImagesJob
+import com.munzenberger.download.images.job.LinkJob
+import com.munzenberger.download.images.registry.InMemoryURLRegistry
+import com.munzenberger.download.images.registry.QueuedURL
+import com.munzenberger.download.images.registry.URLRegistry
 import java.util.function.Consumer
 import java.util.function.Function
 
@@ -9,27 +15,27 @@ class ImageDownloader(
     private val imageFilter: Function<String, Boolean>,
     private val targetFactory: (String) -> TargetFactory,
     private val callback: Consumer<ImageDownloadStatus> = LoggingImageDownloadStatusConsumer(),
-    private val processedRegistry: ProcessedRegistry = InMemoryProcessedRegistry(),
+    private val urlRegistry: URLRegistry = InMemoryURLRegistry(),
     private val depthFirst: Boolean = false,
 ) {
     private val jobQueue = mutableListOf<DownloadJob>()
 
     fun execute(url: String) {
-        processedRegistry.addQueuedLink(QueuedUrl(url, url))
+        urlRegistry.addQueuedLinks(listOf(QueuedURL(url, url)))
         jobQueue.add(linkJob(url, url))
         executeQueue()
     }
 
     fun resume() {
-        processedRegistry.getQueuedLinks().forEach {
+        urlRegistry.getQueuedLinks().forEach {
             jobQueue.add(linkJob(it.url, it.referer))
         }
-        processedRegistry.getQueuedImages().forEach {
+        urlRegistry.getQueuedImages().forEach {
             jobQueue.add(
                 ImagesJob(
                     images = listOf(it.url),
                     targetFactory = targetFactory.invoke(it.referer),
-                    processedRegistry = processedRegistry,
+                    urlRegistry = urlRegistry,
                 ),
             )
         }
@@ -61,7 +67,7 @@ class ImageDownloader(
     ) = LinkJob(
         url = url,
         referer = referer,
-        processedRegistry = processedRegistry,
+        urlRegistry = urlRegistry,
         linkFilter = linkFilter,
         imageFilter = imageFilter,
         addToQueue = { jobQueue.add(it) },

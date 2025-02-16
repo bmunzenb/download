@@ -1,5 +1,6 @@
 package com.munzenberger.download.images
 
+import com.munzenberger.download.images.job.DownloadJob
 import java.util.function.Consumer
 
 interface ImageDownloadStatusConsumer : Consumer<ImageDownloadStatus> {
