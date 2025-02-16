@@ -1,35 +1,55 @@
 package com.munzenberger.download.images
 
+data class QueuedUrl(
+    val url: String,
+    val referer: String,
+)
+
 interface ProcessedRegistry {
-    fun addQueuedLink(url: String)
+    fun addQueuedLink(queuedUrl: QueuedUrl)
 
     fun addProcessedLink(url: String)
 
-    fun addQueuedImage(url: String)
+    fun addQueuedImage(queuedUrl: QueuedUrl)
 
     fun addProcessedImage(url: String)
+
+    fun getQueuedLinks(): Collection<QueuedUrl>
+
+    fun getQueuedImages(): Collection<QueuedUrl>
 
     fun contains(url: String): Boolean
 }
 
 class InMemoryProcessedRegistry : ProcessedRegistry {
-    private val processed = mutableSetOf<String>()
+    private val queuedLinks = mutableMapOf<String, String>()
+    private val processedLinks = mutableSetOf<String>()
+    private val queuedImages = mutableMapOf<String, String>()
+    private val processedImages = mutableSetOf<String>()
 
-    override fun addQueuedLink(url: String) {
-        processed.add(url)
+    override fun addQueuedLink(queuedUrl: QueuedUrl) {
+        queuedLinks[queuedUrl.url] = queuedUrl.referer
     }
 
     override fun addProcessedLink(url: String) {
-        processed.add(url)
+        queuedLinks.remove(url)
+        processedLinks.add(url)
     }
 
-    override fun addQueuedImage(url: String) {
-        processed.add(url)
+    override fun addQueuedImage(queuedUrl: QueuedUrl) {
+        queuedImages[queuedUrl.url] = queuedUrl.referer
     }
 
     override fun addProcessedImage(url: String) {
-        processed.add(url)
+        queuedImages.remove(url)
+        processedImages.add(url)
     }
 
-    override fun contains(url: String): Boolean = processed.contains(url)
+    override fun getQueuedLinks(): Collection<QueuedUrl> = queuedLinks.map { QueuedUrl(it.key, it.value) }
+
+    override fun getQueuedImages(): Collection<QueuedUrl> = queuedImages.map { QueuedUrl(it.key, it.value) }
+
+    @Suppress("MaxLineLength")
+    override fun contains(url: String): Boolean =
+        queuedLinks.keys.contains(url) || processedLinks.contains(url) || queuedImages.keys.contains(url) || processedImages.contains(url)
 }

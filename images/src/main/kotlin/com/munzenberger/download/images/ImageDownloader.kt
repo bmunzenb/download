@@ -15,18 +15,24 @@ class ImageDownloader(
     private val jobQueue = mutableListOf<DownloadJob>()
 
     fun execute(url: String) {
-        processedRegistry.addQueuedLink(url)
-        jobQueue.add(
-            LinkJob(
-                url = url,
-                processedRegistry = processedRegistry,
-                linkFilter = linkFilter,
-                imageFilter = imageFilter,
-                addToQueue = { jobQueue.add(it) },
-                targetFactory = targetFactory,
-                callback = callback,
-            ),
-        )
+        processedRegistry.addQueuedLink(QueuedUrl(url, url))
+        jobQueue.add(linkJob(url, url))
+        executeQueue()
+    }
+
+    fun resume() {
+        processedRegistry.getQueuedLinks().forEach {
+            jobQueue.add(linkJob(it.url, it.referer))
+        }
+        processedRegistry.getQueuedImages().forEach {
+            jobQueue.add(
+                ImagesJob(
+                    images = listOf(it.url),
+                    targetFactory = targetFactory.invoke(it.referer),
+                    processedRegistry = processedRegistry,
+                ),
+            )
+        }
         executeQueue()
     }
 
@@ -48,4 +54,18 @@ class ImageDownloader(
 
         callback.accept(ImageDownloadStatus.EndProcessQueue)
     }
+
+    private fun linkJob(
+        url: String,
+        referer: String,
+    ) = LinkJob(
+        url = url,
+        referer = referer,
+        processedRegistry = processedRegistry,
+        linkFilter = linkFilter,
+        imageFilter = imageFilter,
+        addToQueue = { jobQueue.add(it) },
+        targetFactory = targetFactory,
+        callback = callback,
+    )
 }

@@ -19,6 +19,7 @@ fun interface DownloadJob : Runnable
 @Suppress("LongParameterList")
 internal class LinkJob(
     private val url: String,
+    private val referer: String,
     private val processedRegistry: ProcessedRegistry,
     private val linkFilter: Function<String, Boolean>,
     private val imageFilter: Function<String, Boolean>,
@@ -26,6 +27,11 @@ internal class LinkJob(
     private val targetFactory: (String) -> TargetFactory,
     private val callback: Consumer<ImageDownloadStatus>,
 ) : DownloadJob {
+    private data class Stats(
+        val images: Int = 0,
+        val links: Int = 0,
+    )
+
     override fun run() {
         callback.accept(ImageDownloadStatus.StartProcessLink(url))
 
@@ -33,7 +39,7 @@ internal class LinkJob(
         val contentType = connection.contentType
         val (images, links) =
             when {
-                contentType != null && contentType.contains("image", ignoreCase = true) -> processAsImage(url)
+                contentType != null && contentType.contains("image", ignoreCase = true) -> processAsImage(url, referer)
                 else -> processAsHtml(connection.getInputStream(), url)
             }
 
@@ -43,7 +49,7 @@ internal class LinkJob(
     private fun processAsHtml(
         inStream: InputStream,
         url: String,
-    ): Pair<Int, Int> {
+    ): Stats {
         val doc = Jsoup.parse(inStream, "UTF-8", url)
 
         val images =
@@ -58,7 +64,9 @@ internal class LinkJob(
                 .toSet()
 
         if (images.isNotEmpty()) {
-            images.forEach(processedRegistry::addQueuedImage)
+            images.forEach {
+                processedRegistry.addQueuedImage(QueuedUrl(it, url))
+            }
             addToQueue.invoke(
                 ImagesJob(
                     images,
@@ -80,10 +88,11 @@ internal class LinkJob(
                 .toSet()
 
         links.forEach {
-            processedRegistry.addQueuedLink(it)
+            processedRegistry.addQueuedLink(QueuedUrl(it, referer))
             addToQueue(
                 LinkJob(
                     it,
+                    url,
                     processedRegistry,
                     linkFilter,
                     imageFilter,
@@ -95,27 +104,30 @@ internal class LinkJob(
         }
 
         processedRegistry.addProcessedLink(url)
-        return images.size to links.size
+        return Stats(images.size, links.size)
     }
 
-    private fun processAsImage(url: String): Pair<Int, Int> {
+    private fun processAsImage(
+        url: String,
+        referer: String,
+    ): Stats {
         if (imageFilter.apply(url)) {
-            processedRegistry.addQueuedImage(url)
+            processedRegistry.addQueuedImage(QueuedUrl(url, referer))
             addToQueue.invoke(
                 ImagesJob(
                     listOf(url),
-                    targetFactory.invoke(url),
+                    targetFactory.invoke(referer),
                     processedRegistry,
                 ),
             )
-            return 1 to 0
+            return Stats(images = 1)
         } else {
-            return 0 to 0
+            return Stats()
         }
     }
 }
 
-private class ImagesJob(
+internal class ImagesJob(
     private val images: Collection<String>,
     private val targetFactory: TargetFactory,
     private val processedRegistry: ProcessedRegistry,
