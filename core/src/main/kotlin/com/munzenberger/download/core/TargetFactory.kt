@@ -17,6 +17,7 @@ class FileTargetFactory(
 
 class FlatPathFileTargetFactory(
     private val baseDir: Path,
+    private val fileOnly: Boolean = false,
     private val delimiter: Char = '_',
 ) : TargetFactory {
     override fun create(source: URL): Target {
@@ -24,11 +25,14 @@ class FlatPathFileTargetFactory(
             Files.createDirectories(baseDir)
         }
 
-        val filename =
+        val filename = if (fileOnly) {
+            source.pathParts.last()
+        } else {
             buildString {
                 append(source.host)
                 source.pathParts.forEach { append(delimiter).append(it) }
             }
+        }
 
         val path = baseDir.resolve(filename)
 

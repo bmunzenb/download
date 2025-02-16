@@ -21,11 +21,11 @@ interface ProcessedRegistry {
     fun contains(url: String): Boolean
 }
 
-class InMemoryProcessedRegistry : ProcessedRegistry {
-    private val queuedLinks = mutableMapOf<String, String>()
-    private val processedLinks = mutableSetOf<String>()
-    private val queuedImages = mutableMapOf<String, String>()
-    private val processedImages = mutableSetOf<String>()
+open class InMemoryProcessedRegistry : ProcessedRegistry {
+    protected val queuedLinks = mutableMapOf<String, String>()
+    protected val processedLinks = mutableSetOf<String>()
+    protected val queuedImages = mutableMapOf<String, String>()
+    protected val processedImages = mutableSetOf<String>()
 
     override fun addQueuedLink(queuedUrl: QueuedUrl) {
         queuedLinks[queuedUrl.url] = queuedUrl.referer

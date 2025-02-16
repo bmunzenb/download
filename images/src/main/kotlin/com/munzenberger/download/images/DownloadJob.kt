@@ -43,6 +43,7 @@ internal class LinkJob(
                 else -> processAsHtml(connection.getInputStream(), url)
             }
 
+        processedRegistry.addProcessedLink(url)
         callback.accept(ImageDownloadStatus.EndProcessLink(url, images, links))
     }
 
@@ -103,7 +104,6 @@ internal class LinkJob(
             )
         }
 
-        processedRegistry.addProcessedLink(url)
         return Stats(images.size, links.size)
     }
 
