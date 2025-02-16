@@ -7,14 +7,12 @@ mockk = "1.13.16"
 versions = "0.52.0"
 detekt = "1.23.7"
 ktlint-plugin = "12.1.2"
-jsoup = "1.18.3"
 
 [libraries]
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 clikt = { module = "com.github.ajalt.clikt:clikt", version.ref = "clikt" }
 junit = { module = "junit:junit", version.ref = "junit" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
-jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 kotlin-jvm-plugin = { module = "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
 detekt-plugin = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 ktlint-plugin = { module = "org.jlleitschuh.gradle.ktlint:org.jlleitschuh.gradle.ktlint.gradle.plugin", version.ref = "ktlint-plugin" }

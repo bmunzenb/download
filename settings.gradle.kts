@@ -17,5 +17,4 @@ dependencyResolutionManagement {
 }
 
 include("core")
-include("images")
 include("app")
