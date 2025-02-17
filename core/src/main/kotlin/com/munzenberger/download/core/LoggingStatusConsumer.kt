@@ -60,9 +60,6 @@ class LoggingStatusConsumer(
 
         result.onFailure { error ->
             when (error) {
-                is SourceNotSupportedException -> {
-                    println(" source not supported: ${error.url}")
-                }
                 is HttpException -> {
                     println(" HTTP ${error.code}.")
                 }

@@ -97,27 +97,20 @@ result of the last download when the previous queue in the chain returns `null`.
 ### Step 2: Define a target factory
 
 Create a `TargetFactory` that defines where the contents of a URL should be written to
-when downloaded.  There are four options available:
-1. `FlatPathFileTargetFactory` will write the contents of all URLs to the same specified
-   directory, using the URL path as the file name.
-2. `URLPathFileTargetFactory` will write the contents of all URLs to a directory structure
-   derived from the URLs.
-3. `FileTargetFactory` will write the contents of all URLs to the specified file.  This
+when downloaded.  There are three options available:
+1. `URLPathFileTargetFactory` will write the contents of all URLs to a directory structure
+   derived from the URL paths.
+2. `FileTargetFactory` will write the contents of all URLs to the specified file.  This
    supports appending to the file for each URL so that the contents of all URLs are
    concatenated together.  This is useful if the server has chunked a large file across
    multiple URLs, for example a transport stream video.
-4. Implement your own `TargetFactory` from the interface.
+3. Implement your own `TargetFactory` from the interface.
 
 Examples:
 
 ```kotlin
-// Download all files to the same directory
-val targetFactory = FlatPathFileTargetFactory(baseDir = Path.of("/path/to/downloads"))
-```
-
-```kotlin
 // Create a directory structure matching the URLs for each file
-val targetFactory = URLPathFileTargetFactory(baseDir = Path.of("/downloads"))
+val targetFactory = URLPathFileTargetFactory(baseDir = Path.of("/downloads"), useFullPath = true)
 ```
 
 ```kotlin
@@ -135,9 +128,10 @@ fun create(source: URL): Target
 ```
 
 This function takes the URL that is about to be downloaded and returns an instance of
-`Target` which itself consists of a single `open` function that returns an `OutputStream`
-that the download will be written to.  If you intend on writing to a file, you can return
-an instance of `FileTarget` from the `create` function.
+`Target`. A `Target` must have a `name` property and implement a `write` function that
+writes the contents of the input stream to the intended target and returns the total
+number of bytes transferred.  Optionally, you can also use the `progressCallback` to
+notify the caller of the running total of bytes processed.
 
 ### Step 3: Execute the download
 

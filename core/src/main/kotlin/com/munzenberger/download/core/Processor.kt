@@ -1,8 +1,5 @@
 package com.munzenberger.download.core
 
-import okio.buffer
-import okio.sink
-import okio.source
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -43,12 +40,7 @@ sealed class Status {
 
 class Processor(
     private val requestProperties: Map<String, String> = emptyMap(),
-    private val bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ) {
-    companion object {
-        const val DEFAULT_BUFFER_SIZE = 8192
-    }
-
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,
@@ -74,7 +66,7 @@ class Processor(
                         httpDownload(connection, target, callback)
 
                     else ->
-                        Result.failure(SourceNotSupportedException(url))
+                        transfer(url, connection.getInputStream(), target, callback)
                 }
 
             callback.accept(Status.DownloadResult(url, target, result))
@@ -96,41 +88,30 @@ class Processor(
 
         return when (val code = connection.responseCode) {
             HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
-                val data = transfer(url, connection.inputStream, target, callback)
-                Result.success(data)
+                return transfer(url, connection.inputStream, target, callback)
             }
-
             else -> {
                 Result.failure(HttpException(code))
             }
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private fun transfer(
         url: URL,
         input: InputStream,
         target: Target,
         callback: Consumer<Status>,
-    ): ResultData {
-        val source = input.source().buffer()
-        val sink = target.open().sink().buffer()
-
-        return source.use { inSource ->
-            sink.use { outSink ->
-
-                var total: Long = 0
-                val byteArray = ByteArray(bufferSize)
-                var b = inSource.read(byteArray, 0, byteArray.size)
-
-                while (b > 0) {
-                    outSink.write(byteArray, 0, b)
-                    total += b.toLong()
-                    callback.accept(Status.DownloadProgress(url, target, total))
-                    b = inSource.read(byteArray, 0, byteArray.size)
-                }
-
-                ResultData(total)
-            }
+    ): Result<ResultData> {
+        try {
+            val bytes =
+                target.write(
+                    inStream = input,
+                    progressCallback = { callback.accept(Status.DownloadProgress(url, target, it)) },
+                )
+            return Result.success(ResultData(bytes))
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
     }
 }

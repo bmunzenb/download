@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import com.munzenberger.download.core.FileTarget
 import com.munzenberger.download.core.FileTargetFactory
 import com.munzenberger.download.core.IncrementUntilErrorParamIterator
 import com.munzenberger.download.core.IntRangeParamIterator
@@ -41,8 +42,8 @@ class DownloadCommand : CliktCommand() {
 
     private val bufferSize by option("--buffer-size")
         .int()
-        .default(Processor.DEFAULT_BUFFER_SIZE)
-        .help("Size of download buffer in bytes (defaults to ${Processor.DEFAULT_BUFFER_SIZE})")
+        .default(FileTarget.DEFAULT_BUFFER_SIZE)
+        .help("Size of download buffer in bytes (defaults to ${FileTarget.DEFAULT_BUFFER_SIZE})")
 
     override fun run() {
         val paramIterator =
@@ -55,7 +56,7 @@ class DownloadCommand : CliktCommand() {
 
         val targetFactory =
             when (val path = appendOutputPath) {
-                null -> URLPathFileTargetFactory(Path.of("."))
+                null -> URLPathFileTargetFactory(Path.of("."), true, bufferSize)
                 else -> FileTargetFactory(path, true)
             }
 
@@ -65,9 +66,6 @@ class DownloadCommand : CliktCommand() {
                 referer?.let { put("Referer", it) }
             }
 
-        Processor(
-            requestProperties = requestProperties,
-            bufferSize = bufferSize,
-        ).download(queue, targetFactory)
+        Processor(requestProperties).download(queue, targetFactory)
     }
 }

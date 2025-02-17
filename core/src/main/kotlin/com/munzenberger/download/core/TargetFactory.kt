@@ -1,7 +1,6 @@
 package com.munzenberger.download.core
 
 import java.net.URL
-import java.nio.file.Files
 import java.nio.file.Path
 
 fun interface TargetFactory {
@@ -11,58 +10,30 @@ fun interface TargetFactory {
 class FileTargetFactory(
     private val path: Path,
     private val append: Boolean = false,
+    private val bufferSize: Int = FileTarget.DEFAULT_BUFFER_SIZE,
 ) : TargetFactory {
-    override fun create(source: URL) = FileTarget(path, append)
-}
-
-class FlatPathFileTargetFactory(
-    private val baseDir: Path,
-    private val fileOnly: Boolean = false,
-    private val delimiter: Char = '_',
-) : TargetFactory {
-    override fun create(source: URL): Target {
-        if (!Files.exists(baseDir)) {
-            Files.createDirectories(baseDir)
-        }
-
-        val filename =
-            if (fileOnly) {
-                source.pathParts.last()
-            } else {
-                buildString {
-                    append(source.host)
-                    source.pathParts.forEach { append(delimiter).append(it) }
-                }
-            }
-
-        val path = baseDir.resolve(filename)
-
-        return FileTarget(path)
-    }
+    override fun create(source: URL) = FileTarget(path, append, bufferSize)
 }
 
 class URLPathFileTargetFactory(
     private val baseDir: Path,
+    private val useFullPath: Boolean = false,
+    private val bufferSize: Int = FileTarget.DEFAULT_BUFFER_SIZE,
 ) : TargetFactory {
     override fun create(source: URL): Target {
-        val path = baseDir.resolve(source.host)
+        val parts =
+            source.path
+                .split("/")
+                .filter { it.isNotEmpty() }
 
-        val parts = source.pathParts
+        val path =
+            if (useFullPath) {
+                val root = baseDir.resolve(source.host)
+                parts.fold(root) { acc, part -> acc.resolve(part) }
+            } else {
+                baseDir.resolve(parts.last())
+            }
 
-        // The last part is the filename
-        val directoryPath = parts.dropLast(1).fold(path) { acc, part -> acc.resolve(part) }
-
-        // Ensure the directory exists
-        if (!Files.exists(directoryPath)) {
-            Files.createDirectories(directoryPath)
-        }
-
-        // Append the filename
-        val filePath = directoryPath.resolve(parts.last())
-
-        return FileTarget(filePath)
+        return FileTarget(path, append = false, bufferSize = bufferSize)
     }
 }
-
-private val URL.pathParts: List<String>
-    get() = this.path.split("/").filter { it.isNotEmpty() }
