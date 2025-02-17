@@ -32,7 +32,7 @@ class LoggingStatusConsumer(
         downloadStart = System.currentTimeMillis()
         urlCounter++
         progressCounter = 1
-        print("[$urlCounter] $url -> $target ...")
+        print("[$urlCounter] $url -> ${target.name} ...")
     }
 
     override fun onDownloadProgress(
