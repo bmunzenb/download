@@ -160,20 +160,20 @@ val processor = Processor(headers)
 #### Custom lifecycle monitoring
 
 By default, the `Processor` will log all activity to the console, but you can override
-and/or augment this behavior by passing an implementation of `Consumer<Status>` to the
-download function.  (Note: There is also a `StatusConsumer` convenience interface that
-extends `Consumer<Status>` but allows overriding a function for each `Status` type.)
+and/or augment this behavior by passing an implementation of `Consumer<ProcessorEvent>` to the
+download function.  (Note: There is also a `ProcessorEventConsumer` convenience interface that
+extends `Consumer<ProcessorEvent>` and allows overriding a function for each `ProcessorEvent` type.)
 
 In this example, we augment the logging callback with one that will delete small files:
 
 ```kotlin
-val deleteSmallFiles = object : StatusConsumer {
+val deleteSmallFiles = object : ProcessorEventConsumer {
    override fun onDownloadResult(url: URL, target: Target, result: Result<ResultData>) {
       result.onSuccess { data ->
          // delete the downloaded file if it is less than 1 KB
          if (data.bytes < 1024 && target is FileTarget) {
-            Files.delete(target.path)
-            println("Deleted ${target.path}")
+            Files.delete(target.file)
+            println("Deleted ${target.file}")
          }
       }
    }
@@ -182,6 +182,6 @@ val deleteSmallFiles = object : StatusConsumer {
 Processor().download(
    urlQueue = queue,
    targetFactory = targetFactory,
-   callback = LoggingStatusConsumer().andThen(deleteSmallFiles)
+   callback = LoggingProcessorEventConsumer().andThen(deleteSmallFiles)
 )
 ```

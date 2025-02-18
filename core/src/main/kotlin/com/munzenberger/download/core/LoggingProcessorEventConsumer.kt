@@ -5,10 +5,10 @@ import java.util.Locale
 
 private const val ONE_MEGABYTE = 1024 * 1024
 
-class LoggingStatusConsumer(
+class LoggingProcessorEventConsumer(
     private val locale: Locale = Locale.getDefault(),
     private val progressIndicatorIncrementInBytes: Int = ONE_MEGABYTE,
-) : StatusConsumer {
+) : ProcessorEventConsumer {
     private var urlCounter: Int = 0
     private var downloadCounter: Int = 0
     private var progressCounter: Int = 0

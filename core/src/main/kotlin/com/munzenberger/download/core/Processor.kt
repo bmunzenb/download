@@ -11,42 +11,15 @@ data class ResultData(
 
 val ResultFirst = Result.success(ResultData(-1))
 
-sealed class Status {
-    data class QueueStarted(
-        val queue: URLQueue,
-    ) : Status()
-
-    data class DownloadStarted(
-        val url: URL,
-        val target: Target,
-    ) : Status()
-
-    data class DownloadProgress(
-        val url: URL,
-        val target: Target,
-        val bytes: Long,
-    ) : Status()
-
-    data class DownloadResult(
-        val url: URL,
-        val target: Target,
-        val result: Result<ResultData>,
-    ) : Status()
-
-    data class QueueCompleted(
-        val queue: URLQueue,
-    ) : Status()
-}
-
 class Processor(
     private val requestProperties: Map<String, String> = emptyMap(),
 ) {
     fun download(
         urlQueue: URLQueue,
         targetFactory: TargetFactory,
-        callback: Consumer<Status> = LoggingStatusConsumer(),
+        callback: Consumer<ProcessorEvent> = LoggingProcessorEventConsumer(),
     ) {
-        callback.accept(Status.QueueStarted(urlQueue))
+        callback.accept(ProcessorEvent.QueueStarted(urlQueue))
 
         var url = urlQueue.next(ResultFirst)
 
@@ -69,22 +42,22 @@ class Processor(
                         transfer(url, connection.getInputStream(), target, callback)
                 }
 
-            callback.accept(Status.DownloadResult(url, target, result))
+            callback.accept(ProcessorEvent.DownloadResult(url, target, result))
 
             url = urlQueue.next(result)
         }
 
-        callback.accept(Status.QueueCompleted(urlQueue))
+        callback.accept(ProcessorEvent.QueueCompleted(urlQueue))
     }
 
     private fun httpDownload(
         connection: HttpURLConnection,
         target: Target,
-        callback: Consumer<Status>,
+        callback: Consumer<ProcessorEvent>,
     ): Result<ResultData> {
         val url: URL = connection.url
 
-        callback.accept(Status.DownloadStarted(url, target))
+        callback.accept(ProcessorEvent.DownloadStarted(url, target))
 
         return when (val code = connection.responseCode) {
             HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_PARTIAL -> {
@@ -101,13 +74,13 @@ class Processor(
         url: URL,
         input: InputStream,
         target: Target,
-        callback: Consumer<Status>,
+        callback: Consumer<ProcessorEvent>,
     ): Result<ResultData> {
         try {
             val bytes =
                 target.write(
                     inStream = input,
-                    progressCallback = { callback.accept(Status.DownloadProgress(url, target, it)) },
+                    progressCallback = { callback.accept(ProcessorEvent.DownloadProgress(url, target, it)) },
                 )
             return Result.success(ResultData(bytes))
         } catch (e: Exception) {

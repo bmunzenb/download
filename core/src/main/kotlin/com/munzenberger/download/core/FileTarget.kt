@@ -11,7 +11,7 @@ import java.nio.file.StandardOpenOption
 import java.util.function.Consumer
 
 class FileTarget(
-    private val file: Path,
+    val file: Path,
     private val append: Boolean = false,
     private val bufferSize: Int = DEFAULT_BUFFER_SIZE,
 ) : Target {
