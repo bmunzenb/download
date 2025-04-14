@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.1.10"
-okio = "3.10.2"
+okio = "3.11.0"
 clikt = "5.0.3"
 junit = "4.13.2"
 mockk = "1.13.17"
