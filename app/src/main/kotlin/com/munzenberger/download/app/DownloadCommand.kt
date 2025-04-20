@@ -16,7 +16,7 @@ import com.munzenberger.download.core.TemplateURLQueue
 import com.munzenberger.download.core.URLPathFileTargetFactory
 import java.nio.file.Path
 
-class DownloadCommand : CliktCommand() {
+class DownloadCommand : CliktCommand("download") {
     private val template by option("--template")
         .required()
         .help("Incrementing URL template")
