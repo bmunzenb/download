@@ -13,23 +13,11 @@ class FileTargetFactory(
 
 class URLPathFileTargetFactory(
     private val baseDir: Path,
-    private val useFullPath: Boolean = false,
+    private val pathSpec: PathSpec = FilenamePathSpec,
     private val bufferSize: Int = FileTarget.DEFAULT_BUFFER_SIZE,
 ) : TargetFactory {
     override fun create(source: URL): Target {
-        val parts =
-            source.path
-                .split("/")
-                .filter { it.isNotEmpty() }
-
-        val path =
-            if (useFullPath) {
-                val root = baseDir.resolve(source.host)
-                parts.fold(root) { acc, part -> acc.resolve(part) }
-            } else {
-                baseDir.resolve(parts.last())
-            }
-
+        val path = pathSpec.pathFor(baseDir, source)
         return FileTarget(path, append = false, bufferSize = bufferSize)
     }
 }

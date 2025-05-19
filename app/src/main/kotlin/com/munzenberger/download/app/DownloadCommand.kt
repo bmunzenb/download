@@ -9,6 +9,7 @@ import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
 import com.munzenberger.download.core.FileTarget
 import com.munzenberger.download.core.FileTargetFactory
+import com.munzenberger.download.core.FullPathSpec
 import com.munzenberger.download.core.IncrementUntilErrorParamIterator
 import com.munzenberger.download.core.IntRangeParamIterator
 import com.munzenberger.download.core.Processor
@@ -56,8 +57,17 @@ class DownloadCommand : CliktCommand("download") {
 
         val targetFactory =
             when (val path = appendOutputPath) {
-                null -> URLPathFileTargetFactory(Path.of("."), true, bufferSize)
-                else -> FileTargetFactory(path, true)
+                null ->
+                    URLPathFileTargetFactory(
+                        baseDir = Path.of("."),
+                        pathSpec = FullPathSpec,
+                        bufferSize = bufferSize,
+                    )
+                else ->
+                    FileTargetFactory(
+                        path = path,
+                        append = true,
+                    )
             }
 
         val requestProperties =

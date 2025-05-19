@@ -99,7 +99,7 @@ result of the last download when the previous queue in the chain returns `null`.
 Create a `TargetFactory` that defines where the contents of a URL should be written to
 when downloaded.  There are three options available:
 1. `URLPathFileTargetFactory` will write the contents of all URLs to a directory structure
-   derived from the URL paths.
+   derived from the URL paths via a `PathSpec`.
 2. `FileTargetFactory` will write the contents of all URLs to the specified file.  This
    supports appending to the file for each URL so that the contents of all URLs are
    concatenated together.  This is useful if the server has chunked a large file across
@@ -110,7 +110,10 @@ Examples:
 
 ```kotlin
 // Create a directory structure matching the URLs for each file
-val targetFactory = URLPathFileTargetFactory(baseDir = Path.of("/downloads"), useFullPath = true)
+val targetFactory = URLPathFileTargetFactory(
+   baseDir = Path.of("/downloads"),
+   pathSpec = FullPathSpec
+)
 ```
 
 ```kotlin
